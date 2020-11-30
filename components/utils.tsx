@@ -10,8 +10,6 @@ export const origin = { x: 0, y: 0 }
 export const cameraOrigin = { x: 0, y: 0 }
 export const camera = { x: 0, y: 0, cx: 0, cy: 0, width: 0, height: 0 }
 
-let dpr = 2
-
 export function viewBoxToCamera(
 	point: IPoint,
 	viewBox: IFrame,

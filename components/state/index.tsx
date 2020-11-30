@@ -109,7 +109,7 @@ const state = createState({
 		UNDO: ["loadUndoState", "updateBounds"],
 		REDO: ["loadRedoState", "updateBounds"],
 		STARTED_POINTING: { secretlyDo: "setInitialPointer" },
-		MOVED_POINTER: { secretlyDo: "updatePointerOnPointerMove" },
+		MOVED_POINTER: { do: "updatePointerOnPointerMove" },
 		ZOOMED: "updateCameraZoom",
 		PANNED: ["updateCameraPoint", "updatePointerOnPan"],
 		SCROLLED_VIEWPORT: "updateViewBoxOnScroll",
@@ -594,7 +594,7 @@ const state = createState({
 		updateCameraZoom(data, change = 0) {
 			const { camera, viewBox, pointer } = data
 			const prev = camera.zoom
-			const next = clamp(prev - change, 0.25, 100)
+			const next = clamp(prev - change, 1, 100)
 			const delta = next - prev
 			camera.zoom = next
 			camera.x += ((camera.x + pointer.x) * delta) / prev
@@ -1054,5 +1054,3 @@ const state = createState({
 })
 
 export default state
-
-// state.onUpdate(update => console.log(state.active))

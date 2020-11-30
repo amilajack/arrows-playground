@@ -75,9 +75,21 @@ class Surface {
 
 		const setup = () => {
 			const { graphics } = this
-			//Start the game loop
+			// Start the render loop
 			const boxes = Object.values(steady.boxes).sort((a, b) => b.z - a.z)
 			getFromWorker("updateHitTree", boxes)
+			let timeout;
+
+			// A simple solution to prevent raf calls after all updates are finished
+			state.onUpdate(() => {
+				if (!this.app.ticker) return
+				if (!this.app.ticker.started) this.app.ticker.start();
+				clearTimeout(timeout)
+				timeout = setTimeout(() => {
+					this.app.ticker.stop();
+					console.log('stopped')
+				}, 20);
+			})
 
 			graphics.lineStyle(1 / state.data.camera.zoom, 0x000000, 1)
 			graphics.beginFill(0xffffff, 0.9)
@@ -85,9 +97,12 @@ class Surface {
 				graphics.drawRect(box.x, box.y, box.width, box.height)
 			}
 			graphics.endFill()
+			this.computeArrows()
+			this.drawArrows();
 			this.app.stage.addChild(graphics)
 
-			this.app.ticker.add((delta) => gameLoop(delta))
+			this.app.ticker.add((delta) => renderLoop(delta))
+			this.app.ticker.autoStart = false;
 		}
 
 		const setHit = async () => {
@@ -99,7 +114,8 @@ class Surface {
 			this.cvs.style.setProperty("cursor", this.getCursor(this.hit))
 		}
 
-		const gameLoop = (delta: number) => {
+		const renderLoop = (_delta: number) => {
+			console.log('tick')
 			this.setupCamera()
 
 			if (state.isIn("selectingIdle")) {
@@ -148,11 +164,11 @@ class Surface {
 		this.drawBrush()
 		this.drawSelection()
 
-		// if (this.state.isInAny("dragging")) {
-		//   this.computeArrows()
-		// }
+		if (this.state.isInAny("dragging")) {
+		  this.computeArrows()
+		}
 
-		// this.drawArrows()
+		this.drawArrows()
 		// this.drawSelection()
 	}
 
@@ -174,24 +190,6 @@ class Surface {
 
 	forceCompute() {
 		this.computeArrows()
-	}
-
-	renderCanvasThings() {
-		this.stroke = "#000"
-		this.fill = "rgba(255, 255, 255, .2)"
-
-		for (let i = this.allBoxes.length - 1; i > -1; i--) {
-			this.drawBox(this.allBoxes[i])
-		}
-
-		const allSpawningBoxes = Object.values(steady.spawning.boxes)
-
-		for (let box of allSpawningBoxes) {
-			this.save()
-			this.stroke = "blue"
-			this.drawBox(box)
-			this.restore()
-		}
 	}
 
 	drawBoxes() {
@@ -333,10 +331,9 @@ class Surface {
 
 	drawDot(x: number, y: number, radius = 4) {
 		const r = radius / this.state.data.camera.zoom
-		const { ctx } = this
-		ctx.beginPath()
-		ctx.ellipse(x, y, r, r, 0, 0, PI2, false)
-		ctx.fill()
+		this.graphics.beginFill(0x000, 1)
+		this.graphics.drawCircle(x, y, r)
+		this.graphics.endFill()
 	}
 
 	drawEdge(start: IPoint, end: IPoint) {
@@ -449,36 +446,27 @@ class Surface {
 
 	drawArrows() {
 		const { zoom } = this.state.data.camera
-
-		// for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
-		//   const { ctx } = this
-		//   ctx.save()
-		//   this.stroke = "#000"
-		//   this.fill = "#000"
-		//   this.lineWidth = 1 / zoom
-		//   ctx.beginPath()
-		//   ctx.moveTo(sx, sy)
-		//   ctx.quadraticCurveTo(cx, cy, ex, ey)
-		//   ctx.stroke()
-		//   this.drawDot(sx, sy)
-		//   this.drawArrowhead(ex, ey, ea)
-		//   ctx.restore()
-		// }
+		this.graphics.lineStyle(3, 0x00000);
+		for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
+			this.graphics.moveTo(sx, sy)
+			this.graphics.quadraticCurveTo(cx, cy, ex, ey)
+			this.drawDot(sx, sy)
+			this.drawArrowhead(ex, ey, ea)
+		}
 	}
 
 	drawArrowhead(x: number, y: number, angle: number) {
-		const { ctx } = this
 		const r = 5 / this.state.data.camera.zoom
-		ctx.save()
-		ctx.translate(x, y)
-		ctx.rotate(angle)
-		ctx.beginPath()
-		ctx.moveTo(0, -r)
-		ctx.lineTo(r * 2, 0)
-		ctx.lineTo(0, r)
-		ctx.closePath()
-		ctx.fill()
-		ctx.restore()
+		this.graphics.beginFill(0x000, 1)
+		const transform = (px, py): [number, number] => {
+			const point = new DOMPoint(px, py)
+				.matrixTransform(new DOMMatrix().translate(x, y).rotate(angle * (180 / Math.PI)));
+			return [point.x, point.y];
+		}
+		this.graphics.moveTo(...transform(0, -r))
+		this.graphics.lineTo(...transform(r * 2, 0))
+		this.graphics.lineTo(...transform(0, r))
+		this.graphics.endFill()
 	}
 
 	getCursor(hit: Hit) {

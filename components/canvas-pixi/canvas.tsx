@@ -35,6 +35,7 @@ function Canvas({ width, height, ...rest }: Props) {
 		app = new PIXI.Application({
 			resolution: window.devicePixelRatio,
 			view: canvas,
+			antialias: true
 		})
 
 		app.resizeTo = bg
@@ -53,7 +54,7 @@ function Canvas({ width, height, ...rest }: Props) {
 
 		if (e.ctrlKey) {
 			// Zooming
-			state.send("ZOOMED", deltaY / 100)
+			state.send("ZOOMED", deltaY / 50)
 			state.send("MOVED_POINTER")
 		} else {
 			// Panning
