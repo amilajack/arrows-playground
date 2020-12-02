@@ -4,18 +4,13 @@ import { getArrow, getBoxToBoxArrow } from "perfect-arrows"
 import {
 	IBox,
 	IPoint,
-	IBounds,
-	IBrush,
 	IFrame,
-	IArrow,
 	IArrowType,
 } from "../../types"
 import state, { pointerState, steady } from "../state"
 import * as Comlink from "comlink"
 
 const arrowCache: number[][] = []
-
-const PI2 = Math.PI * 2
 
 const dpr = window.devicePixelRatio || 1
 
@@ -204,7 +199,7 @@ class Surface {
 
 		const allSpawningBoxes = Object.values(steady.spawning.boxes)
 		if (allSpawningBoxes.length > 0) {
-			graphics.lineStyle(1 / this.state.data.camera.zoom, 0x0000ff, 1)
+			graphics.lineStyle(1 / this.state.data.camera.zoom, 0x1e90ff, 1)
 
 			for (let box of allSpawningBoxes) {
 				graphics.drawRect(box.x, box.y, box.width, box.height)
@@ -219,7 +214,7 @@ class Surface {
 		const { boxes, bounds } = steady
 		const { camera, selectedBoxIds } = this.state.data
 
-		graphics.lineStyle(1 / camera.zoom, 0x0000ff, 1)
+		graphics.lineStyle(1 / camera.zoom, 0x1e90ff, 1)
 
 		if (selectedBoxIds.length > 0) {
 			// draw box outlines
@@ -236,7 +231,7 @@ class Surface {
 		) {
 			// draw bounds outline
 			graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height)
-			graphics.beginFill(0x0000ff, 1)
+			graphics.beginFill(0x1e90ff, 1)
 			for (let [x, y] of getCorners(
 				bounds.x,
 				bounds.y,
@@ -249,7 +244,7 @@ class Surface {
 		}
 
 		if (this.hit.type === "box") {
-			graphics.lineStyle(1.5 / camera.zoom, 0x0000ff, 1)
+			graphics.lineStyle(1.5 / camera.zoom, 0x1e90ff, 1)
 			const box = steady.boxes[this.hit.id]
 			if (!box) {
 				this.hit = { type: HitType.Canvas }
@@ -446,7 +441,7 @@ class Surface {
 
 	drawArrows() {
 		const { zoom } = this.state.data.camera
-		this.graphics.lineStyle(3, 0x00000);
+		this.graphics.lineStyle(3 / zoom, 0x00000);
 		for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
 			this.graphics.moveTo(sx, sy)
 			this.graphics.quadraticCurveTo(cx, cy, ex, ey)

@@ -37,8 +37,8 @@ export default function useViewBox<T extends HTMLElement = HTMLDivElement>() {
 			if (e.ctrlKey) e.preventDefault()
 		}
 
-		container.addEventListener("wheel", stopZoom, { passive: false })
-		container.addEventListener("touchmove", stopZoom, { passive: false })
+		container.addEventListener("wheel", stopZoom)
+		container.addEventListener("touchmove", stopZoom)
 
 		return () => {
 			container.removeEventListener("wheel", stopZoom)

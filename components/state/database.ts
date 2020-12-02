@@ -46,30 +46,8 @@ export function getInitialData(): {
 				return acc
 			}, {})
 
-		// Initial Arrows
-		const a = initBoxes["box_a0"]
-		const b = initBoxes["box_a1"]
-
 		const allBoxes = Object.values(initBoxes)
-
-		const initArrows: Record<string, IArrow> = {
-			arrow_a0: {
-				id: "arrow_a0",
-				type: IArrowType.BoxToBox,
-				from: a.id,
-				to: b.id,
-				flip: false,
-				label: "",
-			},
-			arrow_a1: {
-				id: "arrow_a1",
-				type: IArrowType.BoxToBox,
-				from: a.id,
-				to: a.id,
-				flip: false,
-				label: "",
-			},
-		}
+		const initArrows: Record<string, IArrow> = {}
 
 		for (let i = 0; i < allBoxes.length; i++) {
 			let boxA = initBoxes["box_a" + i]

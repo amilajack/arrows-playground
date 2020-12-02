@@ -49,8 +49,6 @@ export const pointerState = createState({
 	on: { MOVED_POINTER: (d, p) => Object.assign(d, p) },
 })
 
-let prevB: any = {}
-
 export const steady = {
 	...getInitialData(),
 	spawning: {
@@ -594,7 +592,7 @@ const state = createState({
 		updateCameraZoom(data, change = 0) {
 			const { camera, viewBox, pointer } = data
 			const prev = camera.zoom
-			const next = clamp(prev - change, 1, 100)
+			const next = clamp(prev - change, 0.1, 100)
 			const delta = next - prev
 			camera.zoom = next
 			camera.x += ((camera.x + pointer.x) * delta) / prev
