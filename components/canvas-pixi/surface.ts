@@ -43,7 +43,6 @@ class Surface {
 	_diffIndex = 0
 	_looping = true
 	cvs: HTMLCanvasElement
-	ctx: CanvasRenderingContext2D
 
 	allBoxes: IBox[] = []
 	hit: Hit = { type: HitType.Canvas }
@@ -315,28 +314,11 @@ class Surface {
 		this.graphics.clear()
 	}
 
-	drawBox(box: IBox | IFrame) {
-		const { ctx } = this
-		const { x, y, width, height } = box
-		const path = new Path2D()
-		path.rect(x, y, width, height)
-		ctx.fill(path)
-		ctx.stroke(path)
-	}
-
 	drawDot(x: number, y: number, radius = 4) {
 		const r = radius / this.state.data.camera.zoom
 		this.graphics.beginFill(0x000, 1)
 		this.graphics.drawCircle(x, y, r)
 		this.graphics.endFill()
-	}
-
-	drawEdge(start: IPoint, end: IPoint) {
-		const { ctx } = this
-		ctx.beginPath()
-		ctx.moveTo(start.x, start.y)
-		ctx.lineTo(end.x, end.y)
-		ctx.stroke()
 	}
 
 	drawBrush() {
@@ -488,46 +470,10 @@ class Surface {
 		return "default"
 	}
 
-	save() {
-		this.ctx.save()
-	}
-
-	restore() {
-		this.ctx.restore()
-	}
-
 	resize() {
 		this.app.resize()
 	}
 
-	// Getters / Setters ----------------
-
-	get stroke() {
-		return this._stroke
-	}
-
-	set stroke(color: string) {
-		this._stroke = color
-		this.ctx.strokeStyle = color
-	}
-
-	get fill() {
-		return this._fill
-	}
-
-	set fill(color: string) {
-		this._fill = color
-		this.ctx.fillStyle = color
-	}
-
-	get lineWidth() {
-		return this._lineWidth
-	}
-
-	set lineWidth(width: number) {
-		this._lineWidth = width
-		this.ctx.lineWidth = width
-	}
 }
 
 export default Surface
