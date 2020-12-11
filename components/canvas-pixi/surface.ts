@@ -3,8 +3,6 @@ import { doBoxesCollide, pointInRectangle, getCorners, camera } from "../utils"
 import { getArrow, getBoxToBoxArrow } from "perfect-arrows"
 import {
 	IBox,
-	IPoint,
-	IFrame,
 	IArrowType,
 } from "../../types"
 import state, { pointerState, steady } from "../state"
@@ -81,16 +79,11 @@ class Surface {
 				clearTimeout(timeout)
 				timeout = setTimeout(() => {
 					this.app.ticker.stop();
-					console.log('stopped')
+					// console.log('stopped')
 				}, 20);
 			})
 
-			graphics.lineStyle(1 / state.data.camera.zoom, 0x000000, 1)
-			graphics.beginFill(0xffffff, 0.9)
-			for (let box of boxes) {
-				graphics.drawRect(box.x, box.y, box.width, box.height)
-			}
-			graphics.endFill()
+			this.drawBoxes();
 			this.computeArrows()
 			this.drawArrows();
 			this.app.stage.addChild(graphics)
@@ -109,7 +102,7 @@ class Surface {
 		}
 
 		const renderLoop = (_delta: number) => {
-			console.log('tick')
+			// console.log('tick')
 			this.setupCamera()
 
 			if (state.isIn("selectingIdle")) {
@@ -189,7 +182,7 @@ class Surface {
 	drawBoxes() {
 		const { graphics } = this
 		const boxes = Object.values(steady.boxes)
-		graphics.lineStyle(1 / this.state.data.camera.zoom, 0x000000, 1)
+		graphics.lineStyle(2 / this.state.data.camera.zoom, 0x000000, 1)
 		graphics.beginFill(0xffffff, 0.9)
 
 		for (let box of boxes) {
@@ -198,7 +191,7 @@ class Surface {
 
 		const allSpawningBoxes = Object.values(steady.spawning.boxes)
 		if (allSpawningBoxes.length > 0) {
-			graphics.lineStyle(1 / this.state.data.camera.zoom, 0x1e90ff, 1)
+			graphics.lineStyle(2 / this.state.data.camera.zoom, 0x1e90ff, 1)
 
 			for (let box of allSpawningBoxes) {
 				graphics.drawRect(box.x, box.y, box.width, box.height)
@@ -213,7 +206,7 @@ class Surface {
 		const { boxes, bounds } = steady
 		const { camera, selectedBoxIds } = this.state.data
 
-		graphics.lineStyle(1 / camera.zoom, 0x1e90ff, 1)
+		graphics.lineStyle(2 / camera.zoom, 0x1e90ff, 1)
 
 		if (selectedBoxIds.length > 0) {
 			// draw box outlines

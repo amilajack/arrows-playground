@@ -11,4 +11,7 @@ module.exports = {
 		})
 		return config
 	},
+	devIndicators: {
+		autoPrerender: false,
+	},
 }

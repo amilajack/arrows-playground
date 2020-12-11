@@ -1,10 +1,10 @@
-import * as React from "react"
+import React, {memo} from "react"
 import state from "../state"
 import { useStateDesigner } from "@state-designer/react"
 import { ToolbarWrapper, ButtonGroup, Divider } from "./styled"
 import IconButton from "./icon-button"
 
-export default function Toolbar() {
+function Toolbar() {
 	const local = useStateDesigner(state)
 
 	const { selectedBoxIds = [], selectedArrowIds = [] } = local.data
@@ -34,6 +34,8 @@ export default function Toolbar() {
 					src="Arrow"
 					event="STARTED_PICKING_ARROW"
 					shortcut="A"
+					onClick={() => state.send("STARTED_PICKING_ARROW")}
+					isActive={local.isIn("arrowTool")}
 					disabled={!hasSelectedBox}
 				/>
 				<Divider />
@@ -136,3 +138,5 @@ export default function Toolbar() {
 		</ToolbarWrapper>
 	)
 }
+
+export default memo(Toolbar)

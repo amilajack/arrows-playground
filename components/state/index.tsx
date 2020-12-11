@@ -10,7 +10,6 @@ import {
 	IArrow,
 	IBoxSnapshot,
 } from "../../types"
-// import Surface from "../canvas/surface"
 import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils"
 import { getInitialData, saveToDatabase } from "./database"
 import { BoxSelecter, getBoxSelecter } from "./box-selecter"
@@ -32,7 +31,6 @@ const getFromWorker = Comlink.wrap<GetFromWorker>(
 	new Worker("service.worker.js")
 )
 
-// let surface: Surface | undefined = undefined
 const id = uuid()
 
 function getId() {
@@ -122,6 +120,7 @@ const state = createState({
 					on: {
 						CANCELLED: "clearSelection",
 						SELECTED_BOX_TOOL: { to: "boxTool" },
+						STARTED_PICKING_ARROW: { to: "arrowTool" },
 						DELETED_SELECTED: {
 							if: "hasSelected",
 							do: [
@@ -297,6 +296,7 @@ const state = createState({
 					on: {
 						SELECTED_SELECT_TOOL: { to: "selectTool" },
 						STARTED_POINTING: { to: "drawingBox" },
+						STARTED_PICKING_ARROW: { to: "arrowTool" },
 					},
 				},
 				drawingBox: {
@@ -320,210 +320,20 @@ const state = createState({
 				},
 			},
 		},
-		// selected: {
-		//   on: {
-		//     DOWNED_POINTER: { do: "updateOrigin" },
-		//   },
-		//   initial: "selectedIdle",
-		//   states: {
-		//     selectedIdle: {
-		//       on: {
-		//         CANCELLED: { do: "clearSelection" },
-		//         STARTED_CLICKING_BOX: { to: "clickingBox" },
-		//         STARTED_CLICKING_CANVAS: { to: "clickingCanvas" },
-		//       },
-		//     },
-		//     clickingCanvas: {
-		//       on: {
-		//         STOPPED_CLICKING_CANVAS: {
-		//           do: "clearSelection",
-		//           to: "selectedIdle",
-		//         },
-		//         MOVED_POINTER: { if: "dragIsFarEnough", to: "brushSelecting" },
-		//       },
-		//     },
-		//     clickingBox: {
-		//       onEnter: "setInitialSnapshot",
-		//       on: {
-		//         DRAGGED_BOX: { if: "dragIsFarEnough", to: "draggingBox" },
-		//       },
-		//     },
-		//     clickingArrowNode: {
-		//       on: {
-		//         DRAGGED_ARROW_NODE: { if: "dragIsFarEnough", to: "drawingArrow" },
-		//         RELEASED_ARROW_NODE: { to: "pickingArrow" },
-		//       },
-		//     },
-		//     brushSelecting: {
-		//       onEnter: [
-		//         "setInitialSelection",
-		//         "updateSelectionBrush",
-		//         {
-		//           if: "isInShiftMode",
-		//           to: "pushingToSelection",
-		//           else: { to: "settingSelection" },
-		//         },
-		//       ],
-		//       on: {
-		//         MOVED_POINTER: { do: "updateSelectionBrush" },
-		//         SCROLLED: { do: "updateSelectionBrush" },
-		//         RAISED_POINTER: { do: "completeSelection", to: "selectedIdle" },
-		//       },
-		//       initial: "settingSelection",
-		//       states: {
-		//         settingSelection: {
-		//           onEnter: {
-		//             get: "brushSelectingBoxes",
-		//             do: "setbrushSelectingToSelection",
-		//           },
-		//           on: {
-		//             ENTERED_SHIFT_MODE: { to: "pushingToSelection" },
-		//             MOVED_POINTER: {
-		//               get: "brushSelectingBoxes",
-		//               if: "brushSelectionHasChanged",
-		//               do: "setbrushSelectingToSelection",
-		//             },
-		//             SCROLLED: {
-		//               get: "brushSelectingBoxes",
-		//               if: "brushSelectionHasChanged",
-		//               do: "setbrushSelectingToSelection",
-		//             },
-		//           },
-		//         },
-		//         pushingToSelection: {
-		//           onEnter: {
-		//             get: "brushSelectingBoxes",
-		//             do: "pushbrushSelectingToSelection",
-		//           },
-		//           on: {
-		//             EXITED_SHIFT_MODE: { to: "settingSelection" },
-		//             MOVED_POINTER: {
-		//               get: "brushSelectingBoxes",
-		//               do: "pushbrushSelectingToSelection",
-		//             },
-		//             SCROLLED: {
-		//               get: "brushSelectingBoxes",
-		//               do: "pushbrushSelectingToSelection",
-		//             },
-		//           },
-		//         },
-		//       },
-		//     },
-		//     draggingBoxes: {
-		//       states: {
-		//         dragOperation: {
-		//           initial: "notCloning",
-		//           states: {
-		//             notCloning: {
-		//               onEnter: "clearDraggingBoxesClones",
-		//               on: {
-		//                 ENTERED_OPTION_MODE: { to: "cloning" },
-		//                 RAISED_POINTER: { do: "completeSelectedBoxes" },
-		//                 CANCELLED: {
-		//                   do: "restoreInitialBoxes",
-		//                   to: "selectedIdle",
-		//                 },
-		//               },
-		//             },
-		//             cloning: {
-		//               onEnter: "createDraggingBoxesClones",
-		//               on: {
-		//                 ENTERED_OPTION_MODE: { to: "notCloning" },
-		//                 RAISED_POINTER: {
-		//                   do: ["completeSelectedBoxes", "completeBoxesFromClones"],
-		//                 },
-		//                 CANCELLED: {
-		//                   do: ["restoreInitialBoxes", "clearDraggingBoxesClones"],
-		//                   to: "selectedIdle",
-		//                 },
-		//               },
-		//             },
-		//           },
-		//         },
-		//         axes: {
-		//           initial: "freeAxes",
-		//           states: {
-		//             freeAxes: {
-		//               onEnter: "updateDraggingBoxesToLockedAxes",
-		//               on: {
-		//                 ENTERED_SHIFT_MODE: { to: "lockedAxes" },
-		//               },
-		//             },
-		//             lockedAxes: {
-		//               onEnter: "updateDraggingBoxesToFreeAxes",
-		//               on: {
-		//                 EXITED_SHIFT_MODE: { to: "freeAxes" },
-		//               },
-		//             },
-		//           },
-		//         },
-		//       },
-		//     },
-		//     resizingBoxes: {
-		//       on: {
-		//         CANCELLED: { do: "restoreInitialBoxes", to: "selectedIdle" },
-		//         RAISED_POINTER: { do: "completeSelectedBoxes" },
-		//       },
-		//       initial: "edgeResizing",
-		//       states: {
-		//         edgeResizing: {
-		//           on: {
-		//             MOVED_POINTER: { do: "cornerResizeSelectedBoxes" },
-		//             SCROLLED: { do: "cornerResizeSelectedBoxes" },
-		//           },
-		//         },
-		//         cornerResizing: {
-		//           on: {
-		//             MOVED_POINTER: { do: "edgeResizeSelectedBoxes" },
-		//             SCROLLED: { do: "edgeResizeSelectedBoxes" },
-		//           },
-		//           initial: "freeRatio",
-		//           states: {
-		//             freeRatio: {
-		//               onEnter: "updateResizingBoxesToLockedRatio",
-		//               on: {
-		//                 ENTERED_SHIFT_MODE: { to: "lockedRatio" },
-		//               },
-		//             },
-		//             lockedRatio: {
-		//               onEnter: "updateResizingBoxesToFreeRatio",
-		//               on: {
-		//                 EXITED_SHIFT_MODE: { to: "freeRatio" },
-		//               },
-		//             },
-		//           },
-		//         },
-		//       },
-		//     },
-		//     creatingArrow: {
-		//       initial: "drawingArrow",
-		//       on: {},
-		//       states: {
-		//         drawingArrow: {},
-		//         pickingArrow: {},
-		//       },
-		//     },
-		//   },
-		// },
-		// drawingBox: {
-		//   on: {
-		//     CANCELLED: { to: "selected" },
-		//   },
-		//   initial: "notDrawing",
-		//   states: {
-		//     notDrawing: {},
-		//   },
-		// },
-		// pickingArrow: {
-		//   initial: "choosingFrom",
-		//   on: {
-		//     CANCELLED: { to: "selected" },
-		//   },
-		//   states: {
-		//     choosingFrom: {},
-		//     choosingTo: {},
-		//   },
-		// },
+		arrowTool: {
+			initial: "arrowIdle",
+			states: {
+				arrowIdle: {
+					on: {
+						SELECTED_SELECT_TOOL: { to: "selectTool" },
+						STOPPED_POINTING: {
+							do: ["clearSelection", "updateBounds"],
+							to: "selectingIdle",
+						},
+					}
+				}
+			}
+		},
 	},
 	results: {
 		brushSelectingBoxes(data) {
@@ -926,7 +736,7 @@ const state = createState({
 		flipSelectedArrows() {},
 		invertSelectedArrows() {},
 		// Arrows to Boxes
-		oxes() {},
+		boxes() {},
 		flipArrowsToSelectedBoxes() {},
 		invertArrowsToSelectedBoxes() {},
 		// Drawing Box

@@ -1,4 +1,4 @@
-import * as React from "react"
+import React, { memo } from "react"
 import state from "../state"
 import { ButtonWrapper, ShortcutHint, Button } from "./styled"
 import * as Icons from "./icons/svgr"
@@ -10,7 +10,7 @@ type IconButtonProps = {
 	shortcut?: string
 } & React.HTMLProps<HTMLButtonElement>
 
-export default function IconButton({
+function IconButton({
 	event = "",
 	isActive = false,
 	src,
@@ -34,3 +34,5 @@ export default function IconButton({
 		</ButtonWrapper>
 	)
 }
+
+export default memo(IconButton)
