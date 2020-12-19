@@ -78,8 +78,7 @@ class Surface {
 				if (!this.app.ticker.started) this.app.ticker.start();
 				clearTimeout(timeout)
 				timeout = setTimeout(() => {
-					this.app.ticker.stop();
-					// console.log('stopped')
+					this.app.ticker?.stop();
 				}, 20);
 			})
 
@@ -102,7 +101,6 @@ class Surface {
 		}
 
 		const renderLoop = (_delta: number) => {
-			// console.log('tick')
 			this.setupCamera()
 
 			if (state.isIn("selectingIdle")) {
@@ -151,7 +149,7 @@ class Surface {
 		this.drawBrush()
 		this.drawSelection()
 
-		if (this.state.isInAny("dragging")) {
+		if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
 		  this.computeArrows()
 		}
 
