@@ -1,8 +1,8 @@
-import * as React from "react";
+import React, {memo} from "react";
 import Positions from "./positions";
 import state from "../state";
 
-export default function Overlays() {
+function Overlays() {
   const [showPositions, setShowPositions] = React.useState(
     process.env.NODE_ENV !== "production"
   );
@@ -37,3 +37,5 @@ export default function Overlays() {
     </div>
   );
 }
+
+export default memo(Overlays)

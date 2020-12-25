@@ -24,10 +24,6 @@ export default function App() {
   useWindowEvents();
   useKeyboardEvents();
 
-  // React.useEffect(() => {
-  // 	Main.init()
-  // }, [])
-
   return (
     <Container ref={ref}>
       <Canvas width={width} height={height} style={{ userSelect: "none" }} />

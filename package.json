@@ -41,5 +41,6 @@
   },
   "lint-staged": {
     "*.ts": "prettier --write"
-  }
+  },
+  "prettier": {}
 }

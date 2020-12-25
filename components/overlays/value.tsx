@@ -1,6 +1,6 @@
-import * as React from "react";
+import React, {memo} from "react";
 
-export default function Value({
+function Value({
   label,
   children,
   style = {},
@@ -28,3 +28,5 @@ export default function Value({
     </div>
   );
 }
+
+export default memo(Value)
