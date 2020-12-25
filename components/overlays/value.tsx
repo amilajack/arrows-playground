@@ -1,13 +1,13 @@
-import * as React from "react"
+import * as React from "react";
 
 export default function Value({
   label,
   children,
   style = {},
 }: {
-  label: string
-  children: React.ReactNode
-  style?: React.CSSProperties
+  label: string;
+  children: React.ReactNode;
+  style?: React.CSSProperties;
 }) {
   return (
     <div
@@ -26,5 +26,5 @@ export default function Value({
       {children}
       <small> {label}</small>
     </div>
-  )
+  );
 }

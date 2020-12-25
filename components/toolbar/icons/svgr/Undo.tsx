@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgUndo(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -12,7 +12,7 @@ function SvgUndo(props: React.SVGProps<SVGSVGElement>) {
         stroke="#000"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgUndo
+export default SvgUndo;

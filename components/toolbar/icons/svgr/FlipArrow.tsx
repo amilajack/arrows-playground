@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgFlipArrow(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -31,7 +31,7 @@ function SvgFlipArrow(props: React.SVGProps<SVGSVGElement>) {
       />
       <circle cx={6} cy={18} r={1.5} fill="currentColor" stroke="#000" />
     </svg>
-  )
+  );
 }
 
-export default SvgFlipArrow
+export default SvgFlipArrow;

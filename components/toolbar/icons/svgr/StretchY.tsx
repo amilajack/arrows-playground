@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgStretchY(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -11,7 +11,7 @@ function SvgStretchY(props: React.SVGProps<SVGSVGElement>) {
         strokeLinejoin="round"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgStretchY
+export default SvgStretchY;

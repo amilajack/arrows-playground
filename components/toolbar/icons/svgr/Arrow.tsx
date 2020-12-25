@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgArrow(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -15,7 +15,7 @@ function SvgArrow(props: React.SVGProps<SVGSVGElement>) {
         stroke="#000"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgArrow
+export default SvgArrow;

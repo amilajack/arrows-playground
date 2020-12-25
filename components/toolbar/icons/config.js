@@ -3,4 +3,4 @@ export default {
   outDir: "svgr",
   icon: true,
   typescript: true,
-}
+};

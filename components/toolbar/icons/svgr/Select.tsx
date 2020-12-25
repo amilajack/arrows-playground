@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgSelect(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -9,7 +9,7 @@ function SvgSelect(props: React.SVGProps<SVGSVGElement>) {
         stroke="#000"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgSelect
+export default SvgSelect;

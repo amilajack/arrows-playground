@@ -1,10 +1,10 @@
-import * as React from "react"
-import { useStateDesigner } from "@state-designer/react"
-import state from "../state"
+import * as React from "react";
+import { useStateDesigner } from "@state-designer/react";
+import state from "../state";
 
 export default function ZoomIndicator() {
-  const local = useStateDesigner(state)
-  const { zoom } = local.data.camera
+  const local = useStateDesigner(state);
+  const { zoom } = local.data.camera;
 
   return (
     <span
@@ -18,5 +18,5 @@ export default function ZoomIndicator() {
     >
       {Math.trunc(zoom * 100)}%
     </span>
-  )
+  );
 }

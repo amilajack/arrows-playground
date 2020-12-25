@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgBox(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -10,7 +10,7 @@ function SvgBox(props: React.SVGProps<SVGSVGElement>) {
         strokeLinejoin="round"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgBox
+export default SvgBox;

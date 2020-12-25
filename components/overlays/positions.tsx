@@ -1,13 +1,13 @@
-import * as React from "react"
-import { useStateDesigner } from "@state-designer/react"
-import state, { pointerState } from "../state"
-import Value from "./value"
+import * as React from "react";
+import { useStateDesigner } from "@state-designer/react";
+import state, { pointerState } from "../state";
+import Value from "./value";
 
 export default function Positions() {
-  const pointer = useStateDesigner(pointerState)
-  const local = useStateDesigner(state)
-  const { camera, viewBox } = local.data
-  const { screen, document } = pointer.data
+  const pointer = useStateDesigner(pointerState);
+  const local = useStateDesigner(state);
+  const { camera, viewBox } = local.data;
+  const { screen, document } = pointer.data;
 
   return (
     <div
@@ -51,5 +51,5 @@ export default function Positions() {
       <Value label="y">{Math.trunc(screen.y)}</Value>
       <div style={{ gridColumn: "span 2" }}>Pointer (Screen)</div>
     </div>
-  )
+  );
 }

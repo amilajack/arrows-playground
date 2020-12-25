@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgLeft(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -11,7 +11,7 @@ function SvgLeft(props: React.SVGProps<SVGSVGElement>) {
         strokeLinejoin="round"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgLeft
+export default SvgLeft;

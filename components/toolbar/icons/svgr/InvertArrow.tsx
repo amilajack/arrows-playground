@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgInvertArrow(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -22,7 +22,7 @@ function SvgInvertArrow(props: React.SVGProps<SVGSVGElement>) {
         stroke="#000"
       />
     </svg>
-  )
+  );
 }
 
-export default SvgInvertArrow
+export default SvgInvertArrow;

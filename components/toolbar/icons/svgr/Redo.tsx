@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 function SvgRedo(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -7,7 +7,7 @@ function SvgRedo(props: React.SVGProps<SVGSVGElement>) {
       <path d="M17.5 10.75a6.75 6.75 0 10-6.75 6.75" stroke="#000" />
       <circle cx={11} cy={18} r={1.5} fill="currentColor" stroke="#000" />
     </svg>
-  )
+  );
 }
 
-export default SvgRedo
+export default SvgRedo;

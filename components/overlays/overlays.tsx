@@ -1,37 +1,39 @@
-import * as React from "react"
-import Positions from "./positions"
-import state from "../state"
+import * as React from "react";
+import Positions from "./positions";
+import state from "../state";
 
 export default function Overlays() {
-	const [showPositions, setShowPositions] = React.useState(process.env.NODE_ENV !== 'production')
+  const [showPositions, setShowPositions] = React.useState(
+    process.env.NODE_ENV !== "production"
+  );
 
-	return (
-		<div
-			style={{
-				position: "absolute",
-				userSelect: "none",
-				pointerEvents: "none",
-				bottom: 8,
-				left: 8,
-			}}
-		>
-			<input
-				type="range"
-				min={0}
-				max={10000}
-				style={{ width: "600px", pointerEvents: "all", marginBottom: 80 }}
-				step={100}
-				onChange={(e) => {
-					state.send("RESET_BOXES", e.currentTarget.value)
-				}}
-			/>
-			{showPositions && <Positions />}
-			<button
-				style={{ marginTop: 8, pointerEvents: "all" }}
-				onClick={() => setShowPositions(!showPositions)}
-			>
-				{showPositions ? "Hide" : "Show"}
-			</button>
-		</div>
-	)
+  return (
+    <div
+      style={{
+        position: "absolute",
+        userSelect: "none",
+        pointerEvents: "none",
+        bottom: 8,
+        left: 8,
+      }}
+    >
+      <input
+        type="range"
+        min={0}
+        max={10000}
+        style={{ width: "600px", pointerEvents: "all", marginBottom: 80 }}
+        step={100}
+        onChange={(e) => {
+          state.send("RESET_BOXES", e.currentTarget.value);
+        }}
+      />
+      {showPositions && <Positions />}
+      <button
+        style={{ marginTop: 8, pointerEvents: "all" }}
+        onClick={() => setShowPositions(!showPositions)}
+      >
+        {showPositions ? "Hide" : "Show"}
+      </button>
+    </div>
+  );
 }
