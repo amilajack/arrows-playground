@@ -31,9 +31,9 @@ export default function App() {
 	return (
 		<Container ref={ref}>
 			<Canvas width={width} height={height} style={{ userSelect: "none" }} />
-			<Overlays />
-			<ZoomIndicator />
-			<Toolbar />
+			{/* <Overlays /> */}
+			{/* <ZoomIndicator /> */}
+			{/* <Toolbar /> */}
 		</Container>
 	)
 }

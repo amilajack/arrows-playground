@@ -3,7 +3,7 @@ import Positions from "./positions"
 import state from "../state"
 
 export default function Overlays() {
-	const [showPositions, setShowPositions] = React.useState(true)
+	const [showPositions, setShowPositions] = React.useState(process.env.NODE_ENV !== 'production')
 
 	return (
 		<div
