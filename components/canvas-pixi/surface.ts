@@ -126,10 +126,10 @@ class Surface {
 				this.allBoxes = Object.values(steady.boxes)
 				this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z)
 				getFromWorker("updateHitTree", this.allBoxes)
+			} else {
+				this.clear()
+				this.draw()
 			}
-
-			this.clear()
-			this.draw()
 
 			this._diffIndex = state.index
 		}
@@ -148,6 +148,7 @@ class Surface {
 		this.drawBoxes()
 		this.drawBrush()
 		this.drawSelection()
+		console.log(123, this.state.active)
 
 		if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
 		  this.computeArrows()
