@@ -28,7 +28,7 @@ function Toolbar() {
           isActive={local.isIn("boxTool")}
           onClick={() => state.send("SELECTED_BOX_TOOL")}
           event="SELECTED_BOX_TOOL"
-          shortcut="F"
+          shortcut="R"
         />
         <IconButton
           src="Arrow"
@@ -38,6 +38,7 @@ function Toolbar() {
           isActive={local.isIn("arrowTool")}
           disabled={!hasSelectedBox}
         />
+        <IconButton src="Text" event="STARTED_TEXT" shortcut="T" />
         <Divider />
         <IconButton
           src="FlipArrow"

@@ -1,4 +1,4 @@
-import React, {memo} from "react";
+import React, { memo } from "react";
 
 function Value({
   label,
@@ -29,4 +29,4 @@ function Value({
   );
 }
 
-export default memo(Value)
+export default memo(Value);

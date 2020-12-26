@@ -1,4 +1,4 @@
-import React, {memo} from "react";
+import React, { memo } from "react";
 import { useStateDesigner } from "@state-designer/react";
 import state from "../state";
 
@@ -21,4 +21,4 @@ function ZoomIndicator() {
   );
 }
 
-export default memo(ZoomIndicator)
+export default memo(ZoomIndicator);

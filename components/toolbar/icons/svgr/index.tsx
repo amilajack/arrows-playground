@@ -16,3 +16,4 @@ export { default as StretchX } from "./StretchX";
 export { default as StretchY } from "./StretchY";
 export { default as Top } from "./Top";
 export { default as Undo } from "./Undo";
+export { default as Text } from "./Text";

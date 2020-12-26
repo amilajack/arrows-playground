@@ -1,4 +1,4 @@
-import React, {memo} from "react";
+import React, { memo } from "react";
 import Positions from "./positions";
 import state from "../state";
 
@@ -38,4 +38,4 @@ function Overlays() {
   );
 }
 
-export default memo(Overlays)
+export default memo(Overlays);

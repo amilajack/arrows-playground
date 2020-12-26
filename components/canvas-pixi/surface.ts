@@ -145,7 +145,6 @@ class Surface {
     this.drawBoxes();
     this.drawBrush();
     this.drawSelection();
-    console.log(123, this.state.active);
 
     if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
       this.computeArrows();
