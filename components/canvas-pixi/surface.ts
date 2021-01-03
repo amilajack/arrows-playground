@@ -84,7 +84,7 @@ class Surface {
       this.drawArrows();
       this.app.stage.addChild(graphics);
 
-      this.app.ticker.add((delta) => renderLoop(delta));
+      this.app.ticker.add(renderLoop);
       this.app.ticker.autoStart = false;
     };
 
@@ -102,6 +102,9 @@ class Surface {
 
       if (state.isIn("selectingIdle")) {
         setHit();
+      }
+      if (state.isIn("textTool")) {
+        this.cvs.style.setProperty("cursor", this.getCursor(this.hit));
       }
 
       let id = "";
@@ -151,6 +154,7 @@ class Surface {
     }
 
     this.drawArrows();
+    this.drawText();
     // this.drawSelection()
   }
 
@@ -172,6 +176,21 @@ class Surface {
 
   forceCompute() {
     this.computeArrows();
+  }
+
+  drawText() {
+    const { data } = this.state;
+    if (!data.text) return;
+    let text = new PIXI.Text("This is a PixiJS text", {
+      fontFamily: "Arial",
+      fontSize: 24,
+      fill: 0xff1010,
+      align: "center",
+    });
+    const { y, x, height, widht } = data.text;
+    text.x = x;
+    text.y = y;
+    this.graphics.addChild(text);
   }
 
   drawBoxes() {
@@ -438,6 +457,7 @@ class Surface {
   getCursor(hit: Hit) {
     const { isIn } = this.state;
 
+    if (isIn("textTool")) return "text";
     if (isIn("dragging")) return "none";
 
     switch (hit.type) {

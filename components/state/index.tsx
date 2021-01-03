@@ -71,6 +71,7 @@ export const steady = {
 
 const state = createState({
   data: {
+    text: null,
     selectedArrowIds: [] as string[],
     selectedBoxIds: [] as string[],
     // surface: undefined as Surface | undefined,
@@ -124,6 +125,7 @@ const state = createState({
             CANCELLED: "clearSelection",
             SELECTED_BOX_TOOL: { to: "boxTool" },
             STARTED_PICKING_ARROW: { to: "arrowTool" },
+            SELECTED_TEXT: { to: "textTool" },
             DELETED_SELECTED: {
               if: "hasSelected",
               do: [
@@ -300,6 +302,7 @@ const state = createState({
             SELECTED_SELECT_TOOL: { to: "selectTool" },
             STARTED_POINTING: { to: "drawingBox" },
             STARTED_PICKING_ARROW: { to: "arrowTool" },
+            SELECTED_TEXT: { to: "textTool" },
           },
         },
         drawingBox: {
@@ -329,6 +332,7 @@ const state = createState({
         arrowIdle: {
           on: {
             SELECTED_SELECT_TOOL: { to: "selectTool" },
+            SELECTED_TEXT: { to: "textTool" },
             STOPPED_POINTING: {
               do: ["clearSelection", "updateBounds"],
               to: "selectingIdle",
@@ -337,6 +341,38 @@ const state = createState({
         },
       },
     },
+    textTool: {
+      initial: "textIdle",
+      states: {
+        textIdle: {
+          on: {
+            SELECTED_SELECT_TOOL: { to: "selectTool" },
+            STARTED_PICKING_ARROW: { to: "arrowTool" },
+            SELECTED_BOX_TOOL: { to: "boxTool" },
+            STARTED_POINTING: { to: "drawingText" },
+          },
+        },
+        drawingText: {
+          initial: "drawingTextIdle",
+          states: {
+            drawingTextIdle: {
+              onEnter: ["createDrawingText"],
+              on: {
+                MOVED_POINTER: { to: "drawingTextActive" },
+                STOPPED_POINTING: { to: "selectingIdle" },
+              },
+            },
+            drawingTextActive: {
+              on: {
+                MOVED_POINTER: { to: "drawingTextIdle" },
+                STOPPED_POINTING: { to: "selectingIdle" },
+              },
+              onEnter: ["createDrawingText"],
+            },
+          },
+        },
+      },
+    }
   },
   results: {
     brushSelectingBoxes(data) {
@@ -793,6 +829,23 @@ const state = createState({
     clearDraggingBoxesClones() {},
     createDraggingBoxesClones() {},
     completeBoxesFromClones() {},
+
+    // Text
+    createDrawingText(data) {
+      const { boxes, initial } = steady;
+      const { pointer } = data;
+      data.text = {
+        id: getId(),
+        x: Math.min(pointer.x, initial.pointer.x),
+        y: Math.min(pointer.y, initial.pointer.y),
+        width: Math.abs(pointer.x - initial.pointer.x),
+        height: Math.abs(pointer.y - initial.pointer.y),
+        label: "",
+        color: "#FFF",
+        z: Object.keys(boxes).length + 1,
+      };
+    },
+    
     // Debugging
     resetBoxes(data, count) {
       const boxes = Array.from(Array(parseInt(count))).map((_, i) => ({

@@ -38,20 +38,26 @@ function Toolbar() {
           isActive={local.isIn("arrowTool")}
           disabled={!hasSelectedBox}
         />
-        <IconButton src="Text" event="STARTED_TEXT" shortcut="T" />
-        <Divider />
         <IconButton
+          src="Text"
+          onClick={() => state.send("SELECTED_TEXT")}
+          isActive={local.isIn("textTool")}
+          event="SELECTED_TEXT"
+          shortcut="T"
+        />
+        <Divider />
+        {/* <IconButton
           src="FlipArrow"
           event="FLIPPED_ARROWS"
           shortcut="T"
           disabled={!hasSelection}
-        />
-        <IconButton
+        /> */}
+        {/* <IconButton
           src="InvertArrow"
           event="INVERTED_ARROWS"
           shortcut="R"
           disabled={!hasSelection}
-        />
+        /> */}
         <Divider />
         <IconButton
           src="Left"

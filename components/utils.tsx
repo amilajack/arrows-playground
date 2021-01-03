@@ -119,10 +119,11 @@ const keyDownActions = {
   Shift: "ENTERED_SHIFT_MODE",
   Control: "ENTERED_CONTROL_MODE",
   Meta: "ENTERED_META_MODE",
-  f: "SELECTED_BOX_TOOL",
+  r: "SELECTED_BOX_TOOL",
   v: "SELECTED_SELECT_TOOL",
-  r: "INVERTED_ARROWS",
-  t: "FLIPPED_ARROWS",
+  t: "SELECTED_TEXT",
+  // r: "INVERTED_ARROWS",
+  // t: "FLIPPED_ARROWS",
   a: "STARTED_PICKING_ARROW",
 };
 
@@ -133,8 +134,8 @@ const keyUpActions = {
   Control: "EXITED_CONTROL_MODE",
   Meta: "EXITED_META_MODE",
   v: "SELECTED_SELECT_TOOL",
-  r: "INVERTED_ARROWS",
-  t: "FLIPPED_ARROWS",
+  // r: "INVERTED_ARROWS",
+  // t: "FLIPPED_ARROWS",
   a: "STARTED_PICKING_ARROW",
 };
 
