@@ -42,6 +42,7 @@ export interface IBoxSnapshot extends IFrame {
   nmy: number;
   nw: number;
   nh: number;
+  graphics: PIXI.Graphics;
 }
 
 export enum IArrowType {

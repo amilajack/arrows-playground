@@ -33,7 +33,7 @@ function Canvas({ width, height, ...rest }: Props) {
     if (!(canvas && bg)) return;
 
     app = new PIXI.Application({
-      resolution: window.devicePixelRatio,
+      // resolution: window.devicePixelRatio,
       view: canvas,
       antialias: true,
     });
@@ -108,12 +108,12 @@ function Canvas({ width, height, ...rest }: Props) {
     >
       <canvas
         ref={rCanvas}
-        width={width * dpr}
-        height={height * dpr}
-        style={{
-          transformOrigin: "top left",
-          transform: `scale(${1 / dpr})`,
-        }}
+        width={width}
+        height={height}
+        // style={{
+        //   transformOrigin: "top left",
+        //   transform: `scale(${1 / dpr})`,
+        // }}
       />
     </CanvasBackground>
   );

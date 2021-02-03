@@ -31,12 +31,6 @@ const getFromWorker = Comlink.wrap<ServiceRequest>(
 );
 
 class Surface {
-  _lineWidth = 2;
-  _stroke: string;
-  _fill: string;
-  _unsub: () => void;
-  _diffIndex = 0;
-  _looping = true;
   cvs: HTMLCanvasElement;
 
   allBoxes: IBox[] = [];
@@ -58,8 +52,10 @@ class Surface {
     this.scale = new PIXI.ObservablePoint(
       () => {},
       this.app,
-      state.data.camera.zoom * dpr,
-      state.data.camera.zoom * dpr
+      state.data.camera.zoom,
+      state.data.camera.zoom
+      // state.data.camera.zoom * dpr,
+      // state.data.camera.zoom * dpr
     );
 
     const setup = () => {
@@ -74,14 +70,13 @@ class Surface {
         if (!this.app.ticker) return;
         if (!this.app.ticker.started) this.app.ticker.start();
         clearTimeout(timeout);
+        this.drawText();
         timeout = setTimeout(() => {
           this.app.ticker?.stop();
-        }, 20);
+        }, 200);
       });
 
-      this.drawBoxes();
-      this.computeArrows();
-      this.drawArrows();
+      this.draw();
       this.app.stage.addChild(graphics);
 
       this.app.ticker.add(renderLoop);
@@ -110,28 +105,28 @@ class Surface {
       let id = "";
       if (this.hit.type === "box") id = this.hit.id;
 
-      if (id !== this.hoveredId) {
-        this.hoveredId = id;
-        if (state.index === this._diffIndex) {
-          this.clear();
-          this.draw();
-        }
-      }
+      // if (id !== this.hoveredId) {
+      //   this.hoveredId = id;
+      //   if (state.index === this._diffIndex) {
+      //     this.clear();
+      //     this.draw();
+      //   }
+      // }
 
-      if (state.index === this._diffIndex) {
-        return;
-      }
+      // if (state.index === this._diffIndex) {
+      //   return;
+      // }
 
       if (state.isIn("selectingIdle")) {
         this.allBoxes = Object.values(steady.boxes);
         this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z);
         getFromWorker("updateHitTree", this.allBoxes);
       } else {
-        this.clear();
-        this.draw();
+        // this.clear();
+        // this.draw();
       }
 
-      this._diffIndex = state.index;
+      // this._diffIndex = state.index;
     };
 
     this.app.loader.load(setup);
@@ -140,20 +135,20 @@ class Surface {
   }
 
   destroy() {
-    this._looping = false;
+    // this._looping = false;
     this.app.destroy();
   }
 
   draw() {
     this.drawBoxes();
-    this.drawBrush();
-    this.drawSelection();
+    // this.drawBrush();
+    // this.drawSelection();
 
-    if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
-      this.computeArrows();
-    }
+    // if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
+    //   this.computeArrows();
+    // }
 
-    this.drawArrows();
+    // this.drawArrows();
     this.drawText();
     // this.drawSelection()
   }
@@ -174,10 +169,6 @@ class Surface {
     );
   }
 
-  forceCompute() {
-    this.computeArrows();
-  }
-
   drawText() {
     const { data } = this.state;
     if (!data.text) return;
@@ -187,7 +178,7 @@ class Surface {
       fill: 0xff1010,
       align: "center",
     });
-    const { y, x, height, widht } = data.text;
+    const { y, x } = data.text;
     text.x = x;
     text.y = y;
     this.graphics.addChild(text);

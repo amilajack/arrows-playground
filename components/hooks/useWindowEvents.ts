@@ -19,14 +19,14 @@ export default function useWindowEvents() {
       state.send("SCROLLED_VIEWPORT", { x: window.scrollX, y: window.scrollY });
     }
 
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerup", handlePointerUp);
+    // window.addEventListener("pointermove", handlePointerMove);
+    // window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointerdown", handlePointerDown);
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
+      // window.removeEventListener("pointermove", handlePointerMove);
+      // window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("scroll", handleScroll);
     };
