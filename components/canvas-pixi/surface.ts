@@ -49,14 +49,14 @@ class Surface {
     this.graphics = new PIXI.Graphics();
 
     this.app.renderer.backgroundColor = 0xefefef;
-    this.scale = new PIXI.ObservablePoint(
-      () => {},
-      this.app,
-      state.data.camera.zoom,
-      state.data.camera.zoom
-      // state.data.camera.zoom * dpr,
-      // state.data.camera.zoom * dpr
-    );
+    // this.scale = new PIXI.ObservablePoint(
+    //   () => {},
+    //   this.app,
+    //   // state.data.camera.zoom,
+    //   // state.data.camera.zoom
+    //   state.data.camera.zoom * dpr,
+    //   state.data.camera.zoom * dpr
+    // );
 
     const setup = () => {
       const { graphics } = this;

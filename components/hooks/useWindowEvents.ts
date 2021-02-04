@@ -19,16 +19,27 @@ export default function useWindowEvents() {
       state.send("SCROLLED_VIEWPORT", { x: window.scrollX, y: window.scrollY });
     }
 
-    // window.addEventListener("pointermove", handlePointerMove);
-    // window.addEventListener("pointerup", handlePointerUp);
+    function handleGesture(e) {
+      e.preventDefault();
+      // @TODO
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointerdown", handlePointerDown);
     window.addEventListener("scroll", handleScroll);
+    document.addEventListener("gesturestart", handleGesture);
+    document.addEventListener("gesturechange", handleGesture);
+    document.addEventListener("gestureend", handleGesture);
 
     return () => {
-      // window.removeEventListener("pointermove", handlePointerMove);
-      // window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("gesturestart", handleGesture);
+      document.removeEventListener("gesturechange", handleGesture);
+      document.removeEventListener("gestureend", handleGesture);
     };
   }, []);
 }

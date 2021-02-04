@@ -5,8 +5,6 @@ import state from "../state";
 import { styled } from "../theme";
 import * as PIXI from "pixi.js";
 
-const dpr = window.devicePixelRatio || 1;
-
 let app: PIXI.Application;
 
 const CanvasBackground = styled.div({
@@ -33,7 +31,9 @@ function Canvas({ width, height, ...rest }: Props) {
     if (!(canvas && bg)) return;
 
     app = new PIXI.Application({
-      // resolution: window.devicePixelRatio,
+      resizeTo: window,
+      resolution: window.devicePixelRatio,
+      autoDensity: true,
       view: canvas,
       antialias: true,
     });
@@ -106,15 +106,7 @@ function Canvas({ width, height, ...rest }: Props) {
         state.send("STOPPED_POINTING", { x: e.clientX, y: e.clientY })
       }
     >
-      <canvas
-        ref={rCanvas}
-        width={width}
-        height={height}
-        // style={{
-        //   transformOrigin: "top left",
-        //   transform: `scale(${1 / dpr})`,
-        // }}
-      />
+      <canvas ref={rCanvas} />
     </CanvasBackground>
   );
 }
