@@ -13,15 +13,17 @@ function Overlays() {
         position: "absolute",
         userSelect: "none",
         pointerEvents: "none",
-        bottom: 8,
-        left: 8,
+        padding: '8px',
+        maxWidth: '100%',
+        bottom: 0,
+        left: 0,
       }}
     >
       <input
         type="range"
         min={0}
         max={10000}
-        style={{ width: "600px", pointerEvents: "all", marginBottom: 80 }}
+        style={{ width: "600px", maxWidth: "100%", pointerEvents: "all", marginBottom: 80 }}
         step={100}
         onChange={(e) => {
           state.send("RESET_BOXES", e.currentTarget.value);

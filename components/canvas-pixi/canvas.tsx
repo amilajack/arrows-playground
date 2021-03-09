@@ -32,8 +32,8 @@ function Canvas({ width, height, ...rest }: Props) {
 
     app = new PIXI.Application({
       resizeTo: window,
-      resolution: window.devicePixelRatio,
-      autoDensity: true,
+      // resolution: window.devicePixelRatio,
+      // autoDensity: true,
       view: canvas,
       antialias: true,
     });
@@ -50,17 +50,17 @@ function Canvas({ width, height, ...rest }: Props) {
   }, [width, height]);
 
   function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
-    const { deltaX, deltaY } = e;
+    const { pageX, pageY, deltaX, deltaY } = e;
 
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.metaKey) {
       // Zooming
-      state.send("ZOOMED", deltaY / 50);
+      state.send("ZOOMED", {pageX, pageY, deltaY});
       state.send("MOVED_POINTER");
     } else {
       // Panning
       state.send("PANNED", {
-        x: deltaX,
-        y: deltaY,
+        x: -deltaX,
+        y: -deltaY,
       });
       state.send("MOVED_POINTER");
     }

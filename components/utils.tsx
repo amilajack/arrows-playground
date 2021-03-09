@@ -16,8 +16,8 @@ export function viewBoxToCamera(
   camera: { x: number; y: number; zoom: number }
 ) {
   return {
-    x: (camera.x + point.x - viewBox.x) / camera.zoom,
-    y: (camera.y + point.y - viewBox.y) / camera.zoom,
+    x: (-camera.x + point.x - viewBox.x) / camera.zoom,
+    y: (-camera.y + point.y - viewBox.y) / camera.zoom,
   };
 }
 

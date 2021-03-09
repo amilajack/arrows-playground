@@ -28,7 +28,7 @@ import * as Comlink from "comlink";
 type GetFromWorker = (type: string, payload: any) => Promise<any>;
 
 const getFromWorker = Comlink.wrap<GetFromWorker>(
-  new Worker("service.worker.js")
+  new Worker("worker.js")
 );
 
 const id = uuid();
@@ -438,14 +438,20 @@ const state = createState({
     },
 
     // Camera -------------------------
-    updateCameraZoom(data, change = 0) {
-      const { camera, viewBox, pointer } = data;
-      const prev = camera.zoom;
-      const next = clamp(prev - change, 0.1, 100);
-      const delta = next - prev;
-      camera.zoom = next;
-      camera.x += ((camera.x + pointer.x) * delta) / prev;
-      camera.y += ((camera.y + pointer.y) * delta) / prev;
+    updateCameraZoom(data, {pageX, pageY, deltaY}: {pageX: number, pageY: number, deltaY: number}) {
+      const { camera, viewBox } = data;
+      
+      function handlePinch(x: number, y: number, delta: number) {
+        adjustScaleWithPin(x, y, Math.pow(0.98, delta));
+      }
+      
+      function adjustScaleWithPin(x: number, y: number, ratio: number) {
+        camera.x += (x - camera.x) * (1 - ratio);
+        camera.y += (y - camera.y) * (1 - ratio);
+        camera.zoom *= ratio;
+      }
+
+      handlePinch(pageX, pageY, deltaY);
 
       viewBox.document.x = camera.x / camera.zoom;
       viewBox.document.y = camera.y / camera.zoom;

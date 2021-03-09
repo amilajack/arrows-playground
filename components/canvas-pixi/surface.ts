@@ -26,9 +26,7 @@ export type Hit =
 
 type ServiceRequest = (type: string, payload: any) => Promise<Hit>;
 
-const getFromWorker = Comlink.wrap<ServiceRequest>(
-  new Worker("service.worker.js")
-);
+const getFromWorker = Comlink.wrap<ServiceRequest>(new Worker("worker.js"));
 
 class Surface {
   cvs: HTMLCanvasElement;
@@ -42,6 +40,8 @@ class Surface {
 
   state = state;
   hoveredId = "";
+  private _diffIndex: number;
+  private _looping: boolean;
 
   constructor(canvas: HTMLCanvasElement, app: PIXI.Application) {
     this.cvs = canvas;
@@ -49,14 +49,6 @@ class Surface {
     this.graphics = new PIXI.Graphics();
 
     this.app.renderer.backgroundColor = 0xefefef;
-    // this.scale = new PIXI.ObservablePoint(
-    //   () => {},
-    //   this.app,
-    //   // state.data.camera.zoom,
-    //   // state.data.camera.zoom
-    //   state.data.camera.zoom * dpr,
-    //   state.data.camera.zoom * dpr
-    // );
 
     const setup = () => {
       const { graphics } = this;
@@ -73,13 +65,15 @@ class Surface {
         this.drawText();
         timeout = setTimeout(() => {
           this.app.ticker?.stop();
-        }, 200);
+        }, 2000);
       });
 
+      this.computeArrows();
       this.draw();
       this.app.stage.addChild(graphics);
 
       this.app.ticker.add(renderLoop);
+      this.app.ticker.start();
       this.app.ticker.autoStart = false;
     };
 
@@ -105,14 +99,17 @@ class Surface {
       let id = "";
       if (this.hit.type === "box") id = this.hit.id;
 
-      // if (id !== this.hoveredId) {
-      //   this.hoveredId = id;
-      //   if (state.index === this._diffIndex) {
-      //     this.clear();
-      //     this.draw();
-      //   }
-      // }
+      if (id !== this.hoveredId) {
+        this.hoveredId = id;
+        // @TODO: Re-enable this optimization
+        // if (state.index === this._diffIndex) {
+        //   this.clear();
+        //   this.draw();
+        // }
+      }
 
+      // @TODO: Re-enable this optimization. This was a premature optimization at the time
+      //        of writing
       // if (state.index === this._diffIndex) {
       //   return;
       // }
@@ -122,11 +119,15 @@ class Surface {
         this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z);
         getFromWorker("updateHitTree", this.allBoxes);
       } else {
+        // @TODO: Re-enable this optimization. This was a premature optimization at the time
+        //        of writing
         // this.clear();
         // this.draw();
       }
+      this.clear();
+      this.draw();
 
-      // this._diffIndex = state.index;
+      this._diffIndex = state.index;
     };
 
     this.app.loader.load(setup);
@@ -135,30 +136,30 @@ class Surface {
   }
 
   destroy() {
-    // this._looping = false;
+    this._looping = false;
     this.app.destroy();
   }
 
   draw() {
     this.drawBoxes();
-    // this.drawBrush();
-    // this.drawSelection();
+    this.drawBrush();
+    this.drawSelection();
 
-    // if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
-    //   this.computeArrows();
-    // }
+    if (this.state.isInAny("dragging", "edgeResizing", "cornerResizing")) {
+      this.computeArrows();
+    }
 
-    // this.drawArrows();
+    this.drawArrows();
     this.drawText();
-    // this.drawSelection()
+    this.drawSelection();
   }
 
   setupCamera() {
     const { camera } = this.state.data;
 
     this.graphics.setTransform(
-      -camera.x,
-      -camera.y,
+      camera.x,
+      camera.y,
       camera.zoom,
       camera.zoom,
       0,
@@ -175,7 +176,7 @@ class Surface {
     let text = new PIXI.Text("This is a PixiJS text", {
       fontFamily: "Arial",
       fontSize: 24,
-      fill: 0xff1010,
+      // fill: 0xff1010,
       align: "center",
     });
     const { y, x } = data.text;
@@ -241,11 +242,11 @@ class Surface {
     }
 
     if (this.hit.type === "box") {
-      graphics.lineStyle(1.5 / camera.zoom, 0x1e90ff, 1);
       const box = steady.boxes[this.hit.id];
       if (!box) {
         this.hit = { type: HitType.Canvas };
       } else {
+        graphics.lineStyle(1.5 / camera.zoom, 0x1e90ff, 1);
         graphics.drawRect(box.x, box.y, box.width, box.height);
       }
     }
@@ -422,6 +423,7 @@ class Surface {
   drawArrows() {
     const { zoom } = this.state.data.camera;
     this.graphics.lineStyle(3 / zoom, 0x00000);
+    console.log(zoom);
     for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
