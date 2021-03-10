@@ -62,7 +62,6 @@ class Surface {
         if (!this.app.ticker) return;
         if (!this.app.ticker.started) this.app.ticker.start();
         clearTimeout(timeout);
-        this.drawText();
         timeout = setTimeout(() => {
           this.app.ticker?.stop();
         }, 2000);
@@ -103,29 +102,25 @@ class Surface {
         this.hoveredId = id;
         // @TODO: Re-enable this optimization
         // if (state.index === this._diffIndex) {
-        //   this.clear();
-        //   this.draw();
+        this.clear();
+        this.draw();
         // }
       }
 
       // @TODO: Re-enable this optimization. This was a premature optimization at the time
       //        of writing
-      // if (state.index === this._diffIndex) {
-      //   return;
-      // }
+      if (state.index === this._diffIndex) {
+        return;
+      }
 
       if (state.isIn("selectingIdle")) {
         this.allBoxes = Object.values(steady.boxes);
         this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z);
         getFromWorker("updateHitTree", this.allBoxes);
       } else {
-        // @TODO: Re-enable this optimization. This was a premature optimization at the time
-        //        of writing
-        // this.clear();
-        // this.draw();
+        this.clear();
+        this.draw();
       }
-      this.clear();
-      this.draw();
 
       this._diffIndex = state.index;
     };
@@ -142,6 +137,7 @@ class Surface {
 
   draw() {
     this.drawBoxes();
+    this.drawText();
     this.drawBrush();
     this.drawSelection();
 
@@ -150,7 +146,6 @@ class Surface {
     }
 
     this.drawArrows();
-    this.drawText();
     this.drawSelection();
   }
 
@@ -172,17 +167,22 @@ class Surface {
 
   drawText() {
     const { data } = this.state;
-    if (!data.text) return;
-    let text = new PIXI.Text("This is a PixiJS text", {
-      fontFamily: "Arial",
-      fontSize: 24,
-      // fill: 0xff1010,
-      align: "center",
-    });
-    const { y, x } = data.text;
-    text.x = x;
-    text.y = y;
-    this.graphics.addChild(text);
+    // if (!data.text) return;
+    this.graphics.removeChildren();
+    const boxes = Object.values(steady.boxes);
+    for (let box of boxes) {
+      if (box.type === "text") {
+        let text = new PIXI.Text(box.label, {
+          fontFamily: "Arial",
+          fontSize: 24,
+          align: "center",
+        });
+        text.resolution = 4;
+        text.x = box.x;
+        text.y = box.y;
+        this.graphics.addChild(text);
+      }
+    }
   }
 
   drawBoxes() {
@@ -192,7 +192,8 @@ class Surface {
     graphics.beginFill(0xffffff, 0.9);
 
     for (let box of boxes) {
-      graphics.drawRect(box.x, box.y, box.width, box.height);
+      if (box.type !== "text")
+        graphics.drawRect(box.x, box.y, box.width, box.height);
     }
 
     const allSpawningBoxes = Object.values(steady.spawning.boxes);
@@ -423,7 +424,6 @@ class Surface {
   drawArrows() {
     const { zoom } = this.state.data.camera;
     this.graphics.lineStyle(3 / zoom, 0x00000);
-    console.log(zoom);
     for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);

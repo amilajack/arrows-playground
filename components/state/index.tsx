@@ -342,7 +342,7 @@ const state = createState({
       },
     },
     textTool: {
-      initial: "textIdle",
+      initial: "drawingText",
       states: {
         textIdle: {
           on: {
@@ -353,22 +353,9 @@ const state = createState({
           },
         },
         drawingText: {
-          initial: "drawingTextIdle",
-          states: {
-            drawingTextIdle: {
-              onEnter: ["createDrawingText"],
-              on: {
-                MOVED_POINTER: { to: "drawingTextActive" },
-                STOPPED_POINTING: { to: "selectingIdle" },
-              },
-            },
-            drawingTextActive: {
-              on: {
-                MOVED_POINTER: { to: "drawingTextIdle" },
-                STOPPED_POINTING: { to: "selectingIdle" },
-              },
-              onEnter: ["createDrawingText"],
-            },
+          on: {
+            STARTED_POINTING: { do: "createDrawingText" },
+            STOPPED_POINTING: { to: "selectingIdle" },
           },
         },
       },
@@ -839,17 +826,20 @@ const state = createState({
     // Text
     createDrawingText(data) {
       const { boxes, initial } = steady;
-      const { pointer } = data;
-      data.text = {
-        id: getId(),
-        x: Math.min(pointer.x, initial.pointer.x),
-        y: Math.min(pointer.y, initial.pointer.y),
-        width: Math.abs(pointer.x - initial.pointer.x),
-        height: Math.abs(pointer.y - initial.pointer.y),
-        label: "",
+      const { pointer, viewBox, camera } = data;
+      const { x, y } = viewBoxToCamera(pointer, viewBox, camera);
+      const box = {
+        id: uuid(),
+        x: Math.min(x, initial.pointer.x),
+        y: Math.min(y, initial.pointer.y),
+        width: 100,
+        height: 100,
+        label: "hello",
         color: "#FFF",
+        type: "text",
         z: Object.keys(boxes).length + 1,
       };
+      boxes[box.id] = box;
     },
     
     // Debugging
