@@ -36,12 +36,10 @@ class Surface {
 
   app: PIXI.Application;
   graphics: PIXI.Graphics;
-  scale: PIXI.ObservablePoint;
 
   state = state;
   hoveredId = "";
   private _diffIndex: number;
-  private _looping: boolean;
 
   constructor(canvas: HTMLCanvasElement, app: PIXI.Application) {
     this.cvs = canvas;
@@ -131,7 +129,6 @@ class Surface {
   }
 
   destroy() {
-    this._looping = false;
     this.app.destroy();
   }
 
