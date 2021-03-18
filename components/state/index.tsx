@@ -14,16 +14,10 @@ import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils";
 import { getInitialData, saveToDatabase } from "./database";
 import { BoxSelecter, getBoxSelecter } from "./box-selecter";
 import * as BoxTransforms from "./box-transforms";
-import clamp from "lodash/clamp";
 import uniqueId from "lodash/uniqueId";
 import { v4 as uuid } from "uuid";
 
 import * as Comlink from "comlink";
-
-// type GetFromWorker = (
-// 	type: "stretchBoxesX" | "stretchBoxesY",
-// 	payload: IBox[]
-// ) => Promise<IBox[]>
 
 type GetFromWorker = (type: string, payload: any) => Promise<any>;
 

@@ -19,7 +19,7 @@ type Props = React.HTMLProps<HTMLCanvasElement> & {
   height: number;
 };
 
-function Canvas({ width, height, ...rest }: Props) {
+function Canvas({ width, height }: Props) {
   const rSurface = useRef<Surface>();
   const rBackground = useRef<HTMLDivElement>(null);
   const rCanvas = useRef<HTMLCanvasElement>(null);
