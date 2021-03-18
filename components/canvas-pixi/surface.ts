@@ -7,8 +7,6 @@ import * as Comlink from "comlink";
 
 const arrowCache: number[][] = [];
 
-const dpr = window.devicePixelRatio || 1;
-
 export enum HitType {
   Canvas = "canvas",
   Bounds = "bounds",
@@ -99,10 +97,10 @@ class Surface {
       if (id !== this.hoveredId) {
         this.hoveredId = id;
         // @TODO: Re-enable this optimization
-        // if (state.index === this._diffIndex) {
-        this.clear();
-        this.draw();
-        // }
+        if (state.index === this._diffIndex) {
+          this.clear();
+          this.draw();
+        }
       }
 
       // @TODO: Re-enable this optimization. This was a premature optimization at the time
@@ -115,10 +113,9 @@ class Surface {
         this.allBoxes = Object.values(steady.boxes);
         this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z);
         getFromWorker("updateHitTree", this.allBoxes);
-      } else {
-        this.clear();
-        this.draw();
       }
+      this.clear();
+      this.draw();
 
       this._diffIndex = state.index;
     };
@@ -134,7 +131,6 @@ class Surface {
 
   draw() {
     this.drawBoxes();
-    this.drawText();
     this.drawBrush();
     this.drawSelection();
 
@@ -160,26 +156,6 @@ class Surface {
       0,
       0
     );
-  }
-
-  drawText() {
-    const { data } = this.state;
-    // if (!data.text) return;
-    this.graphics.removeChildren();
-    const boxes = Object.values(steady.boxes);
-    for (let box of boxes) {
-      if (box.type === "text") {
-        let text = new PIXI.Text(box.label, {
-          fontFamily: "Arial",
-          fontSize: 24,
-          align: "center",
-        });
-        text.resolution = 4;
-        text.x = box.x;
-        text.y = box.y;
-        this.graphics.addChild(text);
-      }
-    }
   }
 
   drawBoxes() {

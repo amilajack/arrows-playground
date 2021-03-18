@@ -32,8 +32,8 @@ function Canvas({ width, height, ...rest }: Props) {
 
     app = new PIXI.Application({
       resizeTo: window,
-      // resolution: window.devicePixelRatio,
-      // autoDensity: true,
+      resolution: window.devicePixelRatio,
+      autoDensity: true,
       view: canvas,
       antialias: true,
     });
