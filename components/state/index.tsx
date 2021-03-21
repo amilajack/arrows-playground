@@ -1,5 +1,6 @@
 import * as React from "react";
 import { createState } from "@state-designer/react";
+import { ArrowOptions, getBoxToBoxArrow } from "perfect-arrows"
 import {
   IArrowType,
   IPoint,
@@ -66,6 +67,10 @@ export const steady = {
 const state = createState({
   data: {
     text: null,
+    arrow: {
+      from: undefined as string | undefined,
+      to: undefined as string | undefined,
+    },
     selectedArrowIds: [] as string[],
     selectedBoxIds: [] as string[],
     // surface: undefined as Surface | undefined,
@@ -321,22 +326,28 @@ const state = createState({
       },
     },
     arrowTool: {
-      initial: "arrowIdle",
+      initial: "creatingArrow",
+      on: {
+        SELECTED_SELECT_TOOL: { to: "selectTool" },
+        SELECTED_TEXT: { to: "textTool" },
+      },
       states: {
-        arrowIdle: {
-          on: {
-            SELECTED_SELECT_TOOL: { to: "selectTool" },
-            SELECTED_TEXT: { to: "textTool" },
-            STOPPED_POINTING: {
-              do: ["clearSelection", "updateBounds"],
-              to: "selectingIdle",
-            },
-          },
-        },
+        creatingArrow: {
+          onEnter: "setArrowFrom",
+					on: {
+						STARTED_POINTING_BOX: [
+              {
+                do: ["setArrowTo", "completeArrow", "saveUndoState", "clearArrowTo"],
+                to: "selectTool"
+              },
+            ],
+						CANCELLED: { to: "selectTool" },
+					},
+				},
       },
     },
     textTool: {
-      initial: "drawingText",
+      initial: "textIdle",
       states: {
         textIdle: {
           on: {
@@ -388,6 +399,17 @@ const state = createState({
     hasSelected(data) {
       return data.selectedBoxIds.length > 0;
     },
+    arrowTargetIsValid(data) {
+			const { to } = data.arrow
+			return !!to && !data.selectedBoxIds.includes(to)
+		},
+    arrowSelected(data) {
+			return data.selectedArrowIds.findIndex(({ id }) => data.selectedArrowIds.includes(id)) > -1
+		},
+    arrowIsSelected(data, payload = {}) {
+			const { id } = payload
+			return data.selectedArrowIds.includes(id)
+		},
   },
   actions: {
     // Pointer ------------------------
@@ -879,6 +901,107 @@ const state = createState({
         boxes: Object.values(boxes),
       });
     },
+
+    // Arrows
+    setArrowTo(data, payload = {}) {
+			const { id = "-1" } = payload
+			if (id === data.arrow.from) return
+			data.arrow.to = id
+		},
+		setArrowFrom(data) {
+			data.arrow.from = data.selectedBoxIds[0]
+		},
+
+		completeArrow(data) {
+			const { boxes, arrows } = steady
+			const { to, from } = data.arrow
+			if (!(to && from)) return
+
+			const a = boxes[from];
+			const b = boxes[to];
+
+			if (!(a && b)) return
+
+			const id = uniqueId("arrow")
+
+      arrows["arrow_b" + id] = {
+        id: "arrow_b" + id,
+        type: IArrowType.BoxToBox,
+        from,
+        to,
+        flip: false,
+        label: "",
+      };
+
+			data.selectedBoxIds = [to]
+			data.arrow.to = undefined
+			data.arrow.from = undefined
+		},
+		updateAllArrows(data) {
+			const { arrows, boxes } = data
+			updateArrows(arrows, boxes)
+		},
+		updateArrowsToSelected(data) {
+			const { arrows, boxes, selection } = data
+			const connectedArrows = arrows.filter(
+				(arrow) =>
+					selection.includes(arrow.to) || selection.includes(arrow.from)
+			)
+			updateArrows(connectedArrows, boxes)
+		},
+		invertSelectedArrows(data) {
+			const { boxes, arrows, selection } = data
+			const selectedArrows = arrows.filter((arrow) =>
+				selection.includes(arrow.id)
+			)
+
+			for (let arrow of selectedArrows) {
+				const t = arrow.from
+				arrow.from = arrow.to
+				arrow.to = t
+			}
+
+			updateArrows(selectedArrows, boxes)
+		},
+		invertSelectedBoxArrows(data) {
+			const { arrows, boxes, selection } = data
+			const selectedArrows = arrows.filter(({ to, from }) =>
+				[to, from].some((id) => selection.includes(id))
+			)
+
+			for (let arrow of selectedArrows) {
+				const t = arrow.from
+				arrow.from = arrow.to
+				arrow.to = t
+			}
+
+			updateArrows(selectedArrows, boxes)
+		},
+		flipSelectedArrows(data) {
+			const { boxes, arrows, selection } = data
+
+			for (let arrow of arrows) {
+				if (selection.includes(arrow.id)) {
+					arrow.flip = !arrow.flip
+				}
+			}
+
+			updateArrows(arrows, boxes)
+		},
+		flipSelectedBoxArrows(data) {
+			const { arrows, boxes, selection } = data
+			const connectedArrows = arrows.filter(({ to, from }) =>
+				[to, from].some((id) => selection.includes(id))
+			)
+			for (let arrow of connectedArrows) {
+				arrow.flip = !arrow.flip
+			}
+
+			updateArrows(connectedArrows, boxes)
+		},
+		clearArrowTo(data, payload = {}) {
+			data.arrow.to = undefined
+		},
   },
   asyncs: {
     async stretchSelectedBoxesX(data) {
@@ -910,5 +1033,39 @@ const state = createState({
     boundingBox(data) {},
   },
 });
+
+function updateArrows(arrows: IArrow[], boxes: IBox[]) {
+	const cache = {} as { [key: string]: IBox }
+
+	for (let arrow of arrows) {
+		const { to, from } = arrow
+		const a = cache[from] || boxes.find((box) => box.id === from)
+		const b = cache[to] || boxes.find((box) => box.id === to)
+
+		if (!(a && b)) {
+			continue
+		}
+
+		cache[from] = a
+		cache[to] = b
+
+		arrow.points = getArrow(a, b, { flip: arrow.flip })
+	}
+}
+
+function getArrow(a: IBox, b: IBox, options: Partial<ArrowOptions> = {}) {
+	const opts = { ...arrowOptions, ...options }
+	return getBoxToBoxArrow(
+		a.x,
+		a.y,
+		a.width,
+		a.height,
+		b.x,
+		b.y,
+		b.width,
+		b.height,
+		opts
+	)
+}
 
 export default state;

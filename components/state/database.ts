@@ -30,11 +30,11 @@ export function getInitialData(): {
 
     // Stress Test! Can do about 5000 boxes easily.
 
-    const initBoxes = Array.from(Array(10))
+    const initBoxes = Array.from(Array(1000))
       .map((_, i) => ({
         id: "box_a" + i,
-        x: 64 + Math.random() * window.innerWidth,
-        y: 64 + Math.random() * window.innerHeight,
+        x: 64 + Math.random() * window.innerWidth * 10,
+        y: 64 + Math.random() * window.innerHeight * 10,
         width: 32 + Math.random() * 64,
         height: 32 + Math.random() * 64,
         label: "",
@@ -49,20 +49,20 @@ export function getInitialData(): {
     const allBoxes = Object.values(initBoxes);
     const initArrows: Record<string, IArrow> = {};
 
-    for (let i = 0; i < allBoxes.length; i++) {
-      let boxA = initBoxes["box_a" + i];
-      let boxB = initBoxes["box_a" + (i + 1)];
-      if (!boxA || !boxB) continue;
+    // for (let i = 0; i < allBoxes.length; i++) {
+    //   let boxA = initBoxes["box_a" + i];
+    //   let boxB = initBoxes["box_a" + (i + 1)];
+    //   if (!boxA || !boxB) continue;
 
-      initArrows["arrow_b" + i] = {
-        id: "arrow_b" + i,
-        type: IArrowType.BoxToBox,
-        from: boxA.id,
-        to: boxB.id,
-        flip: false,
-        label: "",
-      };
-    }
+    //   initArrows["arrow_b" + i] = {
+    //     id: "arrow_b" + i,
+    //     type: IArrowType.BoxToBox,
+    //     from: boxA.id,
+    //     to: boxB.id,
+    //     flip: false,
+    //     label: "",
+    //   };
+    // }
 
     initial = {
       boxes: initBoxes,

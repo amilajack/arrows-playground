@@ -83,8 +83,7 @@ class Surface {
 
     const renderLoop = (_delta: number) => {
       this.setupCamera();
-
-      if (state.isIn("selectingIdle")) {
+      if (state.isInAny("selectingIdle", "creatingArrow")) {
         setHit();
       }
       if (state.isIn("textTool")) {
@@ -402,6 +401,33 @@ class Surface {
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
       this.drawDot(sx, sy);
       this.drawArrowhead(ex, ey, ea);
+    }
+
+    if (state.isIn("creatingArrow")) {
+      const { selectedBoxIds } = this.state.data;
+      if (selectedBoxIds.length > 0) {
+        const [boxId] = selectedBoxIds;
+        const from = steady.boxes[boxId];
+        const to = {
+          ...pointerState.data.document,
+          width: 10,
+          height: 10,
+        };
+        const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
+          from.x,
+          from.y,
+          from.width,
+          from.height,
+          to.x,
+          to.y,
+          to.width,
+          to.height
+        );
+        this.graphics.moveTo(sx, sy);
+        this.graphics.quadraticCurveTo(cx, cy, ex, ey);
+        this.drawDot(sx, sy);
+        this.drawArrowhead(ex, ey, ea);
+      }
     }
   }
 
