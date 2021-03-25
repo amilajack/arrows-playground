@@ -187,8 +187,11 @@ const state = createState({
             STARTED_POINTING_BOUNDS_EDGE: { to: "edgeResizing" },
             STARTED_POINTING_BOUNDS_CORNER: { to: "cornerResizing" },
             STARTED_POINTING_CANVAS: { to: "pointingCanvas" },
+            STARTED_POINTING_ARROW: [
+              { unless: "arrowIsSelected", do: ["clearSelection", "selectArrow"] },
+            ],
             STARTED_POINTING_BOX: [
-              { unless: "boxIsSelected", do: ["selectBox", "updateBounds"] },
+              { unless: "boxIsSelected", do: ["clearSelection", "selectBox", "updateBounds"] },
               { to: "dragging" },
             ],
             STARTED_POINTING_BOUNDS: { to: "dragging" },
@@ -397,7 +400,7 @@ const state = createState({
       return pressedKeys.Shift;
     },
     hasSelected(data) {
-      return data.selectedBoxIds.length > 0;
+      return data.selectedBoxIds.length > 0 || data.selectedArrowIds.length > 0;
     },
     arrowTargetIsValid(data) {
 			const { to } = data.arrow
@@ -545,6 +548,10 @@ const state = createState({
     selectBox(data, payload = {}) {
       const { id } = payload;
       data.selectedBoxIds = [id];
+    },
+    selectArrow(data, payload = {}) {
+      const { id } = payload;
+      data.selectedArrowIds = [id]; 
     },
     setSelectedIdsFromWorker() {
       getFromWorker("selected", pointerState.data.document).then((r) => {
@@ -770,7 +777,11 @@ const state = createState({
         }
         delete boxes[id];
       }
+      for (let id of data.selectedArrowIds) {
+        if (arrows[id]) delete arrows[id];
+      }
       data.selectedBoxIds.length = 0;
+      data.selectedArrowIds.length = 0;
     },
     updateResizingBoxesToFreeRatio() {},
     updateResizingBoxesToLockedRatio() {},

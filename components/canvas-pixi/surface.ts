@@ -5,7 +5,16 @@ import { IBox, IArrowType } from "../../types";
 import state, { pointerState, steady } from "../state";
 import * as Comlink from "comlink";
 
-const arrowCache: number[][] = [];
+const arrowCache: [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  string
+][] = [];
 
 export enum HitType {
   Canvas = "canvas",
@@ -13,6 +22,7 @@ export enum HitType {
   BoundsCorner = "bounds-corner",
   BoundsEdge = "bounds-edge",
   Box = "box",
+  Arrow = "arrow",
 }
 
 export type Hit =
@@ -20,7 +30,8 @@ export type Hit =
   | { type: HitType.Bounds }
   | { type: HitType.BoundsCorner; corner: number }
   | { type: HitType.BoundsEdge; edge: number }
-  | { type: HitType.Box; id: string };
+  | { type: HitType.Box; id: string }
+  | { type: HitType.Arrow; id: string };
 
 type ServiceRequest = (type: string, payload: any) => Promise<Hit>;
 
@@ -49,9 +60,12 @@ class Surface {
     const setup = () => {
       const { graphics } = this;
       // Start the render loop
-      const boxes = Object.values(steady.boxes).sort((a, b) => b.z - a.z);
-      getFromWorker("updateHitTree", boxes);
-      let timeout;
+      getFromWorker("updateHitTree", {
+        boxes: steady.boxes,
+        arrows: steady.arrows,
+        arrowCache,
+      });
+      let timeout: number;
 
       // A simple solution to prevent raf calls after all updates are finished
       state.onUpdate(() => {
@@ -86,12 +100,14 @@ class Surface {
       if (state.isInAny("selectingIdle", "creatingArrow")) {
         setHit();
       }
+
+      // Cursor style
       if (state.isIn("textTool")) {
         this.cvs.style.setProperty("cursor", this.getCursor(this.hit));
       }
-
       let id = "";
-      if (this.hit.type === "box") id = this.hit.id;
+      if (this.hit.type === HitType.Box || this.hit.type === HitType.Arrow)
+        id = this.hit.id;
 
       if (id !== this.hoveredId) {
         this.hoveredId = id;
@@ -109,11 +125,15 @@ class Surface {
       }
 
       if (state.isIn("selectingIdle")) {
-        this.allBoxes = Object.values(steady.boxes);
-        this.allBoxes = this.allBoxes.sort((a, b) => a.z - b.z);
-        getFromWorker("updateHitTree", this.allBoxes);
+        this.allBoxes = Object.values(steady.boxes).sort((a, b) => a.z - b.z);
+        getFromWorker("updateHitTree", {
+          boxes: steady.boxes,
+          arrows: steady.arrows,
+          arrowCache,
+        });
       }
       this.clear();
+      this.computeArrows();
       this.draw();
 
       this._diffIndex = state.index;
@@ -286,9 +306,9 @@ class Surface {
     this.graphics.clear();
   }
 
-  drawDot(x: number, y: number, radius = 4) {
+  drawDot(x: number, y: number, radius = 4, color: number = 0x000) {
     const r = radius / this.state.data.camera.zoom;
-    this.graphics.beginFill(0x000, 1);
+    this.graphics.beginFill(color, 1);
     this.graphics.drawCircle(x, y, r);
     this.graphics.endFill();
   }
@@ -389,18 +409,23 @@ class Surface {
         }
       }
 
-      arrowCache.push([sx, sy, cx, cy, ex, ey, ea]);
+      arrowCache.push([sx, sy, cx, cy, ex, ey, ea, id]);
     }
   }
 
   drawArrows() {
     const { zoom } = this.state.data.camera;
     this.graphics.lineStyle(3 / zoom, 0x00000);
-    for (let [sx, sy, cx, cy, ex, ey, ea] of arrowCache) {
+    const selectedIds = new Set(this.state.data.selectedArrowIds);
+    for (let [sx, sy, cx, cy, ex, ey, ea, id] of arrowCache) {
+      const selected = id === this.hoveredId || selectedIds.has(id);
+      if (selected) this.graphics.lineStyle(3 / zoom, 0x1e90ff);
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
-      this.drawDot(sx, sy);
-      this.drawArrowhead(ex, ey, ea);
+      const color = selected ? 0x1e90ff : 0x00000;
+      this.drawDot(sx, sy, undefined, color);
+      this.drawArrowhead(ex, ey, ea, color);
+      if (selected) this.graphics.lineStyle(3 / zoom, 0x00000);
     }
 
     if (state.isIn("creatingArrow")) {
@@ -425,15 +450,16 @@ class Surface {
         );
         this.graphics.moveTo(sx, sy);
         this.graphics.quadraticCurveTo(cx, cy, ex, ey);
-        this.drawDot(sx, sy);
-        this.drawArrowhead(ex, ey, ea);
+        const color = 0x00000;
+        this.drawDot(sx, sy, undefined, color);
+        this.drawArrowhead(ex, ey, ea, color);
       }
     }
   }
 
-  drawArrowhead(x: number, y: number, angle: number) {
+  drawArrowhead(x: number, y: number, angle: number, color: number) {
     const r = 5 / this.state.data.camera.zoom;
-    this.graphics.beginFill(0x000, 1);
+    this.graphics.beginFill(color, 1);
     const transform = (px, py): [number, number] => {
       const point = new DOMPoint(px, py).matrixTransform(
         new DOMMatrix().translate(x, y).rotate(angle * (180 / Math.PI))
@@ -453,6 +479,7 @@ class Surface {
     if (isIn("dragging")) return "none";
 
     switch (hit.type) {
+      case "arrow":
       case "box":
       case "bounds": {
         return "default";

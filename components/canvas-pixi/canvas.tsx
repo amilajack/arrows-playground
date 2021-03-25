@@ -85,6 +85,10 @@ function Canvas({ width, height }: Props) {
             state.send("STARTED_POINTING_BOX", { id: hit.id });
             break;
           }
+          case "arrow": {
+            state.send("STARTED_POINTING_ARROW", { id: hit.id });
+            break;
+          }
           case "bounds-corner": {
             state.send("STARTED_POINTING_BOUNDS_CORNER", hit.corner);
             break;

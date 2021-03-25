@@ -1,6 +1,7 @@
 import { IBox, IArrow, IArrowType } from "../../types";
 
 const RESET_LOCAL_DATA = true;
+const SEED_ARROWS = false;
 
 export const LOCAL_STORAGE_KEY = "perfect_arrows_example";
 
@@ -49,20 +50,23 @@ export function getInitialData(): {
     const allBoxes = Object.values(initBoxes);
     const initArrows: Record<string, IArrow> = {};
 
-    // for (let i = 0; i < allBoxes.length; i++) {
-    //   let boxA = initBoxes["box_a" + i];
-    //   let boxB = initBoxes["box_a" + (i + 1)];
-    //   if (!boxA || !boxB) continue;
+    // Seed initial arrows
+    if (SEED_ARROWS) {
+      for (let i = 0; i < allBoxes.length; i++) {
+        let boxA = initBoxes["box_a" + i];
+        let boxB = initBoxes["box_a" + (i + 1)];
+        if (!boxA || !boxB) continue;
 
-    //   initArrows["arrow_b" + i] = {
-    //     id: "arrow_b" + i,
-    //     type: IArrowType.BoxToBox,
-    //     from: boxA.id,
-    //     to: boxB.id,
-    //     flip: false,
-    //     label: "",
-    //   };
-    // }
+        initArrows["arrow_b" + i] = {
+          id: "arrow_b" + i,
+          type: IArrowType.BoxToBox,
+          from: boxA.id,
+          to: boxB.id,
+          flip: false,
+          label: "",
+        };
+      }
+    }
 
     initial = {
       boxes: initBoxes,

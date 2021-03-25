@@ -1,7 +1,8 @@
-// @ts-check
+const exports = {}
 importScripts(
   "https://unpkg.com/comlink/dist/umd/comlink.js",
-  "https://unpkg.com/rbush@3.0.1/rbush.min.js"
+  "https://unpkg.com/rbush@3.0.1/rbush.min.js",
+  "https://unpkg.com/bezier-js@4.0.3/dist/bezier.common.js"
 );
 
 const tree = new RBush();
@@ -238,17 +239,42 @@ function stretchBoxesY(boxes) {
   return boxes;
 }
 
-function updateHitTestTree(boxes) {
+function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = []}) {
   hitTree.clear();
 
+  const allBoxes = Object.values(boxes).sort((a, b) => b.z - a.z);
+
+  const arrowsWithCoords = arrowCache.map((_arrow) => {
+    const [sx, sy, cx, cy, ex, ey, ea, id] = _arrow;
+    const arrow = arrows[id];
+    const {x,y} = new Bezier(sx, sy, cx, cy, ex, ey).bbox();
+
+    const boundingBox = {
+      x: x.min,
+      y: y.min,
+      maxX: x.max,
+      maxY: y.max,
+      width: x.size,
+      height: y.size,
+    };
+
+    return {
+      ...arrow,
+      ...boundingBox,
+      type: 'arrow',
+      z: 0
+    }
+  })
+  
   hitTree.load(
-    boxes.map((box) => ({
+    [...allBoxes, ...arrowsWithCoords].map((box) => ({
       id: box.id,
       minX: box.x,
       minY: box.y,
       maxX: box.x + box.width,
       maxY: box.y + box.height,
       z: box.z,
+      type: box.type || 'box',
     }))
   );
 }
@@ -311,7 +337,7 @@ function hitTest({ point, bounds, zoom }) {
 
   if (hits.length > 0) {
     const hit = Object.values(hits).sort((a, b) => b.z - a.z)[0];
-    return { type: "box", id: hit.id };
+    return { type: hit.type || "box", id: hit.id };
   }
 
   return { type: "canvas" };
