@@ -25,6 +25,7 @@ function Canvas({ width, height }: Props) {
   const rCanvas = useRef<HTMLCanvasElement>(null);
 
   function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
+    e.preventDefault();
     const { pageX, pageY, deltaX, deltaY } = e;
 
     if (e.ctrlKey || e.metaKey) {
