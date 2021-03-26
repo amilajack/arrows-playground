@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { doBoxesCollide, pointInRectangle, getCorners, camera } from "../utils";
+import { doBoxesCollide, pointInRectangle, getCorners } from "../utils";
 import { getArrow, getBoxToBoxArrow } from "perfect-arrows";
 import { IBox, IArrowType } from "../../types";
 import state, { pointerState, steady } from "../state";
@@ -418,14 +418,16 @@ class Surface {
     this.graphics.lineStyle(3 / zoom, 0x00000);
     const selectedIds = new Set(this.state.data.selectedArrowIds);
     for (let [sx, sy, cx, cy, ex, ey, ea, id] of arrowCache) {
-      const selected = id === this.hoveredId || selectedIds.has(id);
-      if (selected) this.graphics.lineStyle(3 / zoom, 0x1e90ff);
+      const isSelectedOrHovered = id === this.hoveredId || selectedIds.has(id);
+      const color = isSelectedOrHovered
+        ? (selectedIds.has(id) ? 0x0152a2 : 0x1e90ff)
+        : 0x00000;
+      if (isSelectedOrHovered) this.graphics.lineStyle(3 / zoom, color);
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
-      const color = selected ? 0x1e90ff : 0x00000;
       this.drawDot(sx, sy, undefined, color);
       this.drawArrowhead(ex, ey, ea, color);
-      if (selected) this.graphics.lineStyle(3 / zoom, 0x00000);
+      if (isSelectedOrHovered) this.graphics.lineStyle(3 / zoom, color);
     }
 
     if (state.isIn("creatingArrow")) {

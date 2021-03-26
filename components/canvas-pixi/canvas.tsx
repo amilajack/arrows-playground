@@ -24,6 +24,23 @@ function Canvas({ width, height }: Props) {
   const rBackground = useRef<HTMLDivElement>(null);
   const rCanvas = useRef<HTMLCanvasElement>(null);
 
+  function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
+    const { pageX, pageY, deltaX, deltaY } = e;
+
+    if (e.ctrlKey || e.metaKey) {
+      // Zooming
+      state.send("ZOOMED", {pageX, pageY, deltaY});
+      state.send("MOVED_POINTER");
+    } else {
+      // Panning
+      state.send("PANNED", {
+        x: -deltaX,
+        y: -deltaY,
+      });
+      state.send("MOVED_POINTER");
+    }
+  }
+
   useEffect(() => {
     if (rSurface.current) rSurface.current.destroy();
     const canvas = rCanvas.current;
@@ -43,33 +60,18 @@ function Canvas({ width, height }: Props) {
 
     rSurface.current = new Surface(canvas, app);
     state.send("UPDATED_SURFACE", rSurface.current);
+
+    rBackground.current?.addEventListener('wheel', handleWheel)
+    return () => rBackground.current?.removeEventListener('wheel', handleWheel)
   }, [rCanvas]);
 
   useEffect(() => {
     app.resize();
   }, [width, height]);
 
-  function handleWheel(e: React.WheelEvent<HTMLDivElement>) {
-    const { pageX, pageY, deltaX, deltaY } = e;
-
-    if (e.ctrlKey || e.metaKey) {
-      // Zooming
-      state.send("ZOOMED", {pageX, pageY, deltaY});
-      state.send("MOVED_POINTER");
-    } else {
-      // Panning
-      state.send("PANNED", {
-        x: -deltaX,
-        y: -deltaY,
-      });
-      state.send("MOVED_POINTER");
-    }
-  }
-
   return (
     <CanvasBackground
       ref={rBackground}
-      onWheel={handleWheel}
       onPointerDown={(e) => {
         const surface = rSurface.current;
         if (!surface) return;
