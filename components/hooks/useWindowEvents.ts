@@ -19,7 +19,7 @@ export default function useWindowEvents() {
       state.send("SCROLLED_VIEWPORT", { x: window.scrollX, y: window.scrollY });
     }
 
-    function handleGesture(e) {
+    function handleGesture(e: Event) {
       e.preventDefault();
       // @TODO
     }

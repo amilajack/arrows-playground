@@ -1,4 +1,7 @@
 module.exports = {
+  typescript: {
+    ignoreBuildErrors: true
+  },
   webpack(config, options) {
     config.module.rules.push({
       test: /\.worker\.js$/,

@@ -948,68 +948,68 @@ const state = createState({
 			data.arrow.to = undefined
 			data.arrow.from = undefined
 		},
-		updateAllArrows(data) {
-			const { arrows, boxes } = data
-			updateArrows(arrows, boxes)
-		},
-		updateArrowsToSelected(data) {
-			const { arrows, boxes, selection } = data
-			const connectedArrows = arrows.filter(
-				(arrow) =>
-					selection.includes(arrow.to) || selection.includes(arrow.from)
-			)
-			updateArrows(connectedArrows, boxes)
-		},
-		invertSelectedArrows(data) {
-			const { boxes, arrows, selection } = data
-			const selectedArrows = arrows.filter((arrow) =>
-				selection.includes(arrow.id)
-			)
+		// updateAllArrows(data) {
+		// 	const { arrows, boxes } = steady
+		// 	updateArrows(arrows, boxes)
+		// },
+		// updateArrowsToSelected(data) {
+		// 	const { arrows, boxes, selection } = steady
+		// 	const connectedArrows = arrows.filter(
+		// 		(arrow) =>
+		// 			selection.includes(arrow.to) || selection.includes(arrow.from)
+		// 	)
+		// 	updateArrows(connectedArrows, boxes)
+		// },
+		// invertSelectedArrows(data) {
+		// 	const { boxes, arrows, selection } = steady
+		// 	const selectedArrows = arrows.filter((arrow) =>
+		// 		selection.includes(arrow.id)
+		// 	)
 
-			for (let arrow of selectedArrows) {
-				const t = arrow.from
-				arrow.from = arrow.to
-				arrow.to = t
-			}
+		// 	for (let arrow of selectedArrows) {
+		// 		const t = arrow.from
+		// 		arrow.from = arrow.to
+		// 		arrow.to = t
+		// 	}
 
-			updateArrows(selectedArrows, boxes)
-		},
-		invertSelectedBoxArrows(data) {
-			const { arrows, boxes, selection } = data
-			const selectedArrows = arrows.filter(({ to, from }) =>
-				[to, from].some((id) => selection.includes(id))
-			)
+		// 	updateArrows(selectedArrows, boxes)
+		// },
+		// invertSelectedBoxArrows(data) {
+		// 	const { arrows, boxes, selection } = steady
+		// 	const selectedArrows = arrows.filter(({ to, from }) =>
+		// 		[to, from].some((id) => selection.includes(id))
+		// 	)
 
-			for (let arrow of selectedArrows) {
-				const t = arrow.from
-				arrow.from = arrow.to
-				arrow.to = t
-			}
+		// 	for (let arrow of selectedArrows) {
+		// 		const t = arrow.from
+		// 		arrow.from = arrow.to
+		// 		arrow.to = t
+		// 	}
 
-			updateArrows(selectedArrows, boxes)
-		},
-		flipSelectedArrows(data) {
-			const { boxes, arrows, selection } = data
+		// 	updateArrows(selectedArrows, boxes)
+		// },
+		// flipSelectedArrows(data) {
+		// 	const { boxes, arrows, selection } = steady
 
-			for (let arrow of arrows) {
-				if (selection.includes(arrow.id)) {
-					arrow.flip = !arrow.flip
-				}
-			}
+		// 	for (let arrow of arrows) {
+		// 		if (selection.includes(arrow.id)) {
+		// 			arrow.flip = !arrow.flip
+		// 		}
+		// 	}
 
-			updateArrows(arrows, boxes)
-		},
-		flipSelectedBoxArrows(data) {
-			const { arrows, boxes, selection } = data
-			const connectedArrows = arrows.filter(({ to, from }) =>
-				[to, from].some((id) => selection.includes(id))
-			)
-			for (let arrow of connectedArrows) {
-				arrow.flip = !arrow.flip
-			}
+		// 	updateArrows(arrows, boxes)
+		// },
+		// flipSelectedBoxArrows(data) {
+		// 	const { arrows, boxes, selection } = steady
+		// 	const connectedArrows = arrows.filter(({ to, from }) =>
+		// 		[to, from].some((id) => selection.includes(id))
+		// 	)
+		// 	for (let arrow of connectedArrows) {
+		// 		arrow.flip = !arrow.flip
+		// 	}
 
-			updateArrows(connectedArrows, boxes)
-		},
+		// 	updateArrows(connectedArrows, boxes)
+		// },
 		clearArrowTo(data, payload = {}) {
 			data.arrow.to = undefined
 		},
@@ -1064,8 +1064,7 @@ function updateArrows(arrows: IArrow[], boxes: IBox[]) {
 	}
 }
 
-function getArrow(a: IBox, b: IBox, options: Partial<ArrowOptions> = {}) {
-	const opts = { ...arrowOptions, ...options }
+function getArrow(a: IBox, b: IBox, opts: Partial<ArrowOptions> = {}) {
 	return getBoxToBoxArrow(
 		a.x,
 		a.y,

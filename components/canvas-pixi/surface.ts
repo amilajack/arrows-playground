@@ -54,6 +54,7 @@ class Surface {
     this.cvs = canvas;
     this.app = app;
     this.graphics = new PIXI.Graphics();
+    this._diffIndex = 0;
 
     this.app.renderer.backgroundColor = 0xefefef;
 
@@ -462,7 +463,7 @@ class Surface {
   drawArrowhead(x: number, y: number, angle: number, color: number) {
     const r = 5 / this.state.data.camera.zoom;
     this.graphics.beginFill(color, 1);
-    const transform = (px, py): [number, number] => {
+    const transform = (px: number, py: number): [number, number] => {
       const point = new DOMPoint(px, py).matrixTransform(
         new DOMMatrix().translate(x, y).rotate(angle * (180 / Math.PI))
       );

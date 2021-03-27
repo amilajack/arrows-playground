@@ -1,13 +1,29 @@
-import React, { memo } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import state from "../state";
-import { useStateDesigner } from "@state-designer/react";
 import { ToolbarWrapper, ButtonGroup, Divider } from "./styled";
 import IconButton from "./icon-button";
+import { isEqual } from "lodash";
+
+const useStateDesigner = () => {
+  let [data, setData] = useState({...state});
+  const onUpdate = (_data) => {
+    if (
+      !isEqual(_data.active, data.active) ||
+      !isEqual(_data.data.selectedBoxIds, data.data.selectedBoxIds) ||
+      !isEqual(_data.data.selectedArrowIds, data.data.selectedArrowIds)
+    ) {
+      setData({
+        ..._data
+      });
+    }
+  };
+  useEffect(() => state.onUpdate(onUpdate), []);
+  return data;
+}
 
 function Toolbar() {
-  const local = useStateDesigner(state);
-
-  const { selectedBoxIds = [], selectedArrowIds = [] } = local.data;
+  const local = useStateDesigner();
+  const { selectedBoxIds = [], selectedArrowIds = [] } = local.data || {};
 
   const hasSelection = selectedBoxIds.length + selectedArrowIds.length > 0;
   const hasSelectedBox = selectedBoxIds.length > 0;

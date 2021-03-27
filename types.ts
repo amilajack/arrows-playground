@@ -1,3 +1,5 @@
+import PIXI from 'pixi.js';
+
 export interface IPoint {
   x: number;
   y: number;
@@ -42,7 +44,6 @@ export interface IBoxSnapshot extends IFrame {
   nmy: number;
   nw: number;
   nh: number;
-  graphics: PIXI.Graphics;
 }
 
 export enum IArrowType {
