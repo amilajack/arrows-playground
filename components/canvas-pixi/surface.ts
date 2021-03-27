@@ -423,12 +423,11 @@ class Surface {
       const color = isSelectedOrHovered
         ? (selectedIds.has(id) ? 0x0152a2 : 0x1e90ff)
         : 0x00000;
-      if (isSelectedOrHovered) this.graphics.lineStyle(3 / zoom, color);
+      this.graphics.lineStyle(3 / zoom, color);
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
       this.drawDot(sx, sy, undefined, color);
       this.drawArrowhead(ex, ey, ea, color);
-      if (isSelectedOrHovered) this.graphics.lineStyle(3 / zoom, color);
     }
 
     if (state.isIn("creatingArrow")) {

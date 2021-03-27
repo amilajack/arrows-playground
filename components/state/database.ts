@@ -31,7 +31,7 @@ export function getInitialData(): {
 
     // Stress Test! Can do about 5000 boxes easily.
 
-    const initBoxes = Array.from(Array(1000))
+    const initBoxes = Array.from(Array(700))
       .map((_, i) => ({
         id: "box_a" + i,
         x: 64 + Math.random() * window.innerWidth * 10,

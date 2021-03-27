@@ -372,7 +372,6 @@ function getTransform(type, payload) {
     }
     case "selected": {
       boxSelecter(payload);
-
       return selected;
     }
   }
