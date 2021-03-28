@@ -340,7 +340,7 @@ const state = createState({
 					on: {
 						STARTED_POINTING_BOX: [
               {
-                do: ["setArrowTo", "completeArrow", "saveUndoState", "clearArrowTo"],
+                do: ["setArrowTo", "completeArrow", "updateBounds", "saveUndoState"],
                 to: "selectTool"
               },
             ],
@@ -1010,9 +1010,9 @@ const state = createState({
 
 		// 	updateArrows(connectedArrows, boxes)
 		// },
-		clearArrowTo(data, payload = {}) {
-			data.arrow.to = undefined
-		},
+		// clearArrowTo(data, payload = {}) {
+		// 	data.arrow.to = undefined
+		// },
   },
   asyncs: {
     async stretchSelectedBoxesX(data) {
