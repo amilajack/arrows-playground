@@ -32,7 +32,7 @@ function Overlays() {
         style={{ marginTop: 8, pointerEvents: "all" }}
         onClick={() => setShowPositions(!showPositions)}
       >
-        {showPositions ? "Hide" : "Show"}
+        {showPositions ? "Hide" : "Show Debugger"}
       </button>
     </div>
   );

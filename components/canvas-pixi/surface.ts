@@ -17,6 +17,7 @@ const arrowCache: [
 ][] = [];
 
 const PRIMARY_COLOR = 0x1e90ff;
+const PRIMARY_COLOR_DARK = 0x1873CC;
 
 export enum HitType {
   Canvas = "canvas",
@@ -67,6 +68,7 @@ class Surface {
         boxes: steady.boxes,
         arrows: steady.arrows,
         arrowCache,
+        zoom: this.state.data.camera.zoom,
       });
       let timeout: number;
 
@@ -133,6 +135,7 @@ class Surface {
           boxes: steady.boxes,
           arrows: steady.arrows,
           arrowCache,
+          zoom: this.state.data.camera.zoom,
         });
       }
       this.clear();
@@ -353,8 +356,6 @@ class Surface {
         case IArrowType.BoxToBox: {
           const from = boxes[arrow.from];
           const to = boxes[arrow.to];
-          if (from.id === to.id) {
-          }
           // Box to Box Arrow
           [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
             from.x,
@@ -423,7 +424,7 @@ class Surface {
     for (let [sx, sy, cx, cy, ex, ey, ea, id] of arrowCache) {
       const isSelectedOrHovered = id === this.hoveredId || selectedIds.has(id);
       const color = isSelectedOrHovered
-        ? (selectedIds.has(id) ? 0x0152a2 : PRIMARY_COLOR)
+        ? (selectedIds.has(id) ? PRIMARY_COLOR_DARK : PRIMARY_COLOR)
         : 0x00000;
       this.graphics.lineStyle(3 / zoom, color);
       this.graphics.moveTo(sx, sy);
@@ -436,12 +437,18 @@ class Surface {
       const { selectedBoxIds } = this.state.data;
       if (selectedBoxIds.length > 0) {
         const [boxId] = selectedBoxIds;
+        let to;
+        if (this.hit.type === 'box') {
+          const {id} = this.hit;
+          to = steady.boxes[id];
+        } else {
+          to = {
+            ...pointerState.data.document,
+            width: 10,
+            height: 10,
+          }
+        }
         const from = steady.boxes[boxId];
-        const to = {
-          ...pointerState.data.document,
-          width: 10,
-          height: 10,
-        };
         const [sx, sy, cx, cy, ex, ey, ea] = getBoxToBoxArrow(
           from.x,
           from.y,

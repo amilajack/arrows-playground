@@ -1,3 +1,4 @@
+// @HACK: common.js hack to make bezier.js work
 const exports = {}
 importScripts(
   "https://unpkg.com/comlink/dist/umd/comlink.js",
@@ -7,6 +8,10 @@ importScripts(
 
 const tree = new RBush();
 const hitTree = new RBush();
+
+const curveCache = new Map();
+
+const BBOX_PADDING = 15;
 
 function updateTree({ boxes }) {
   tree.clear();
@@ -239,30 +244,50 @@ function stretchBoxesY(boxes) {
   return boxes;
 }
 
-function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = []}) {
-  hitTree.clear();
+function distance2(p1, p2) {
+  let dx = p1.x - p2.x,
+      dy = p1.y - p2.y;
+  return dx * dx + dy * dy;
+}
 
+function distanceToCurve(curve, point, steps = 50) {
+  // Get a look up table for 10 equidistant points on the curve. Find the one
+  // that minimizes the distance
+  let dist = curve.getLUT(steps).reduce((p, c) => Math.min(p, distance2(c, point)), Infinity)
+  return Math.sqrt(dist)
+}
+
+function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = [], zoom = 1}) {
+  hitTree.clear();
+  curveCache.clear();
+
+  // sort in descending order
   const allBoxes = Object.values(boxes).sort((a, b) => b.z - a.z);
 
   const arrowsWithCoords = arrowCache.map((_arrow) => {
     const [sx, sy, cx, cy, ex, ey, ea, id] = _arrow;
     const arrow = arrows[id];
-    const {x,y} = new Bezier(sx, sy, cx, cy, ex, ey).bbox();
+    const curve = new Bezier(sx, sy, cx, cy, ex, ey);
+    curveCache.set(id, curve);
+    const { x, y } = curve.bbox();
+
+    const p = BBOX_PADDING / zoom;
+    const pp = p * 2;
 
     const boundingBox = {
-      x: x.min,
-      y: y.min,
-      maxX: x.max,
-      maxY: y.max,
-      width: x.size,
-      height: y.size,
+      x: x.min - p,
+      y: y.min - p,
+      maxX: x.max + p,
+      maxY: y.max + p,
+      width: x.size + pp,
+      height: y.size + pp,
     };
 
     return {
       ...arrow,
       ...boundingBox,
       type: 'arrow',
-      z: 0
+      z: allBoxes.length 
     }
   })
   
@@ -284,7 +309,7 @@ function hitTest({ point, bounds, zoom }) {
     // Test if point collides the (padded) bounds
     if (pointInRectangle(point, bounds, 16)) {
       const { x, y, width, height, maxX, maxY } = bounds;
-      const p = 5 / zoom;
+      const p = BBOX_PADDING / zoom;
       const pp = p * 2;
 
       const cornerBoxes = [
@@ -336,8 +361,29 @@ function hitTest({ point, bounds, zoom }) {
   // }
 
   if (hits.length > 0) {
-    const hit = Object.values(hits).sort((a, b) => b.z - a.z)[0];
-    return { type: hit.type || "box", id: hit.id };
+    // z sort in descending order
+    const _hits = Object.values(hits).sort((a, b) => b.z - a.z);
+    let hit;
+
+    // Boxes are simple.
+    if (_hits[0].type === 'box') hit = _hits[0];
+    // Curved arrows are less simple since we have a finer grained bezier curve test
+    // If the shortest distance from the cursor to the curve is < delta, consider that curve
+    // being hovered over
+    if (_hits[0].type === 'arrow') {
+      hit = _hits.find((_hit) => {
+        // fine grained check
+        if (_hit.type === 'arrow') {
+          const curve = curveCache.get(_hit.id);
+          if (!curve) return false
+          return distanceToCurve(curve, { x: point.x, y: point.y }, Math.floor(50 * zoom)) < BBOX_PADDING / zoom;
+        }
+        // the hit is a box, we are done
+        return true;
+      })
+    }
+
+    if (hit) return { type: hit.type || "box", id: hit.id };
   }
 
   return { type: "canvas" };
