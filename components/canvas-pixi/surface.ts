@@ -313,7 +313,7 @@ class Surface {
   }
 
   drawDot(x: number, y: number, radius = 4, color: number = 0x000) {
-    const r = radius / this.state.data.camera.zoom;
+    const r = Math.min(radius / this.state.data.camera.zoom, 20);
     this.graphics.beginFill(color, 1);
     this.graphics.drawCircle(x, y, r);
     this.graphics.endFill();
@@ -418,18 +418,18 @@ class Surface {
   }
 
   drawArrows() {
-    const { zoom } = this.state.data.camera;
-    this.graphics.lineStyle(3 / zoom, 0x00000);
+    const w = Math.min(3 / this.state.data.camera.zoom, 20);
+    this.graphics.lineStyle(w, 0x00000);
     const selectedIds = new Set(this.state.data.selectedArrowIds);
     for (let [sx, sy, cx, cy, ex, ey, ea, id] of arrowCache) {
       const isSelectedOrHovered = id === this.hoveredId || selectedIds.has(id);
       const color = isSelectedOrHovered
         ? (selectedIds.has(id) ? PRIMARY_COLOR_DARK : PRIMARY_COLOR)
         : 0x00000;
-      this.graphics.lineStyle(3 / zoom, color);
+      this.graphics.lineStyle(w, color);
       this.graphics.moveTo(sx, sy);
       this.graphics.quadraticCurveTo(cx, cy, ex, ey);
-      this.drawDot(sx, sy, undefined, color);
+      this.drawDot(sx, sy, 4, color);
       this.drawArrowhead(ex, ey, ea, color);
     }
 
@@ -462,14 +462,14 @@ class Surface {
         this.graphics.moveTo(sx, sy);
         this.graphics.quadraticCurveTo(cx, cy, ex, ey);
         const color = 0x00000;
-        this.drawDot(sx, sy, undefined, color);
+        this.drawDot(sx, sy, 4, color);
         this.drawArrowhead(ex, ey, ea, color);
       }
     }
   }
 
   drawArrowhead(x: number, y: number, angle: number, color: number) {
-    const r = 5 / this.state.data.camera.zoom;
+    const r = Math.min(5 / this.state.data.camera.zoom, 20);
     this.graphics.beginFill(color, 1);
     const transform = (px: number, py: number): [number, number] => {
       const point = new DOMPoint(px, py).matrixTransform(
