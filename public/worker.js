@@ -1,7 +1,7 @@
 // @HACK: common.js hack to make bezier.js work
-const exports = {}
+const exports = {};
 importScripts(
-  "https://unpkg.com/comlink/dist/umd/comlink.js",
+  "https://unpkg.com/comlink@4.3.0/dist/umd/comlink.js",
   "https://unpkg.com/rbush@3.0.1/rbush.min.js",
   "https://unpkg.com/bezier-js@4.0.3/dist/bezier.common.js"
 );
@@ -246,26 +246,33 @@ function stretchBoxesY(boxes) {
 
 function distance2(p1, p2) {
   let dx = p1.x - p2.x,
-      dy = p1.y - p2.y;
+    dy = p1.y - p2.y;
   return dx * dx + dy * dy;
 }
 
 function distanceToCurve(curve, point, steps = 50) {
   // Get a look up table for 10 equidistant points on the curve. Find the one
   // that minimizes the distance
-  let dist = curve.getLUT(steps).reduce((p, c) => Math.min(p, distance2(c, point)), Infinity)
-  return Math.sqrt(dist)
+  let dist = curve
+    .getLUT(steps)
+    .reduce((p, c) => Math.min(p, distance2(c, point)), Infinity);
+  return Math.sqrt(dist);
 }
 
-function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = [], zoom = 1}) {
+function updateHitTestTree({
+  boxes = {},
+  arrows = {},
+  arrowCache = {},
+  zoom = 1,
+}) {
   hitTree.clear();
   curveCache.clear();
 
   // sort in descending order
   const allBoxes = Object.values(boxes).sort((a, b) => b.z - a.z);
 
-  const arrowsWithCoords = arrowCache.map((_arrow) => {
-    const [sx, sy, cx, cy, ex, ey, ea, id] = _arrow;
+  const arrowsWithCoords = Object.entries(arrowCache).map(([id, _arrow]) => {
+    const [sx, sy, cx, cy, ex, ey, ea] = _arrow;
     const arrow = arrows[id];
     const curve = new Bezier(sx, sy, cx, cy, ex, ey);
     curveCache.set(id, curve);
@@ -286,11 +293,11 @@ function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = [], zoom = 1})
     return {
       ...arrow,
       ...boundingBox,
-      type: 'arrow',
-      z: allBoxes.length 
-    }
-  })
-  
+      type: "arrow",
+      z: allBoxes.length,
+    };
+  });
+
   hitTree.load(
     [...allBoxes, ...arrowsWithCoords].map((box) => ({
       id: box.id,
@@ -299,7 +306,7 @@ function updateHitTestTree({boxes = {}, arrows = {}, arrowCache = [], zoom = 1})
       maxX: box.x + box.width,
       maxY: box.y + box.height,
       z: box.z,
-      type: box.type || 'box',
+      type: box.type || "box",
     }))
   );
 }
@@ -366,21 +373,28 @@ function hitTest({ point, bounds, zoom }) {
     let hit;
 
     // Boxes are simple.
-    if (_hits[0].type === 'box') hit = _hits[0];
+    if (_hits[0].type === "box") hit = _hits[0];
     // Curved arrows are less simple since we have a finer grained bezier curve test
     // If the shortest distance from the cursor to the curve is < delta, consider that curve
     // being hovered over
-    if (_hits[0].type === 'arrow') {
+    if (_hits[0].type === "arrow") {
       hit = _hits.find((_hit) => {
         // fine grained check
-        if (_hit.type === 'arrow') {
+        if (_hit.type === "arrow") {
           const curve = curveCache.get(_hit.id);
-          if (!curve) return false
-          return distanceToCurve(curve, { x: point.x, y: point.y }, Math.floor(50 * zoom)) < BBOX_PADDING / zoom;
+          if (!curve) return false;
+          return (
+            distanceToCurve(
+              curve,
+              { x: point.x, y: point.y },
+              Math.floor(50 * zoom)
+            ) <
+            BBOX_PADDING / zoom
+          );
         }
         // the hit is a box, we are done
         return true;
-      })
+      });
     }
 
     if (hit) return { type: hit.type || "box", id: hit.id };

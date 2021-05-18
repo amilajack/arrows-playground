@@ -9,32 +9,35 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@state-designer/react": "^1.6.93",
+    "@state-designer/react": "^1.7.1",
     "@stitches/react": "^0.0.2",
     "@types/rbush": "^3.0.0",
     "@types/uuid": "^8.3.0",
     "@zeit/next-workers": "^1.0.0",
+    "canvaskit-wasm": "^0.26.0",
     "comlink": "^4.3.0",
     "lodash": "^4.17.21",
-    "next": "10.1.1",
+    "mitt": "^2.1.0",
+    "next": "10.2.0",
     "perfect-arrows": "^0.3.3",
-    "pixi.js": "^6.0.1",
     "rbush": "^3.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-no-ssr": "^1.1.0",
+    "react-skia-fiber": "/Users/amila/Documents/Projects/react-skia-fiber/react-skia-fiber-v1.0.0.tgz",
     "use-resize-observer": "^7.0.0",
     "uuid": "^8.3.2",
     "worker-loader": "^3.0.8"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.168",
-    "@types/react": "^17.0.3",
-    "@types/react-dom": "^17.0.3",
+    "@types/lodash": "^4.14.169",
+    "@types/node": "^15.3.0",
+    "@types/react": "^17.0.5",
+    "@types/react-dom": "^17.0.5",
     "husky": "^5.2.0",
     "lint-staged": "^10.5.4",
-    "prettier": "^2.2.1",
-    "typescript": "^4.2.3"
+    "prettier": "^2.3.0",
+    "typescript": "^4.2.4"
   },
   "husky": {
     "hooks": {

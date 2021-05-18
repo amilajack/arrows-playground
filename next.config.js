@@ -1,9 +1,12 @@
 module.exports = {
+  reactStrictMode: true,
   productionBrowserSourceMaps: true,
   typescript: {
-    ignoreBuildErrors: true
+    ignoreBuildErrors: true,
   },
-  webpack(config, options) {
+  webpack(config, { isServer }) {
+    if (!isServer) config.resolve.fallback.fs = false;
+
     config.module.rules.push({
       test: /\.worker\.js$/,
       loader: "worker-loader",
@@ -18,6 +21,10 @@ module.exports = {
   devIndicators: {
     autoPrerender: false,
   },
+  // @TODO
+  // experimental: {
+  //   reactMode: 'concurrent'
+  // },
   future: {
     webpack5: true,
   },

@@ -1,4 +1,4 @@
-import PIXI from 'pixi.js';
+import PIXI from "pixi.js";
 
 export interface IPoint {
   x: number;
@@ -33,6 +33,7 @@ export interface IBox extends IFrame {
   id: string;
   label: string;
   color: string;
+  arrows: string[];
   z: number;
 }
 
