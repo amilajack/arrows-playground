@@ -1,5 +1,3 @@
-import PIXI from "pixi.js";
-
 export interface IPoint {
   x: number;
   y: number;

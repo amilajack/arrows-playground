@@ -2,6 +2,7 @@ import { getBoxToBoxArrow, ArrowOptions } from "perfect-arrows";
 import uniqueId from "lodash/uniqueId";
 import { IPoint, IBounds, IFrame, IBox, IArrow } from "../types";
 import state from "./state/index";
+import { CanvasKit } from "canvaskit-wasm";
 
 export let scale = 1;
 export const pressedKeys = {} as Record<string, boolean>;
@@ -150,6 +151,14 @@ export function handleKeyDown(e: KeyboardEvent) {
 
   // Handle shift here?
 }
+
+export const CenteredRect = (
+  ck: CanvasKit,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => ck.XYWHRect(x - width / 2, y - height / 2, width, height);
 
 export function handleKeyUp(e: KeyboardEvent) {
   if (

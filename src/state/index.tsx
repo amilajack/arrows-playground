@@ -36,7 +36,7 @@ function getId() {
  *       the state design object (ex. with `on`). To workaround this we emit an event
  *       from the action in the state designer and subscribe to it from outside the design.
  */
-export const __events = mitt();
+export const sceneEvents = mitt();
 
 let selecter: BoxSelecter | undefined;
 let resizer:
@@ -641,7 +641,9 @@ const state = createState({
     },
     updateBounds(data) {
       const { selectedBoxIds } = data;
-      if (selectedBoxIds.length === 0) steady.bounds = undefined;
+      if (selectedBoxIds.length === 0) {
+        steady.bounds = undefined;
+      }
       steady.bounds = getBoundingBox(
         data.selectedBoxIds.map((id) => steady.boxes[id])
       );
@@ -820,23 +822,49 @@ const state = createState({
     },
     deleteSelected(data) {
       const { arrows, boxes } = steady;
-      for (let id of data.selectedBoxIds) {
+      for (let boxId of data.selectedBoxIds) {
         for (let arrow of Object.values(arrows)) {
-          if (arrow.to === id || arrow.from === id) {
+          if (arrow.to === boxId || arrow.from === boxId) {
+            if (
+              typeof arrow.to === "string" &&
+              typeof arrow.from === "string"
+            ) {
+              boxes[arrow.to].arrows = boxes[arrow.to].arrows.filter(
+                (arrowId) => arrowId !== arrow.id
+              );
+              boxes[arrow.from].arrows = boxes[arrow.from].arrows.filter(
+                (arrowId) => arrowId !== arrow.id
+              );
+            }
             delete arrows[arrow.id];
             delete steady.arrowCache[arrow.id];
           }
         }
-        delete boxes[id];
+        delete boxes[boxId];
       }
       for (let id of data.selectedArrowIds) {
         if (arrows[id]) {
+          const arrow = arrows[id];
+          if (typeof arrow.to === "string" && typeof arrow.from === "string") {
+            boxes[arrow.to].arrows = boxes[arrow.to].arrows.filter(
+              (arrowId) => arrowId !== arrow.id
+            );
+            boxes[arrow.from].arrows = boxes[arrow.from].arrows.filter(
+              (arrowId) => arrowId !== arrow.id
+            );
+          }
           delete arrows[id];
           delete steady.arrowCache[id];
+        }
+        for (let box of Object.values(boxes)) {
+          if (box.arrows.includes(id)) {
+            box.arrows.filter((arrowId) => arrowId !== id);
+          }
         }
       }
       data.selectedBoxIds.length = 0;
       data.selectedArrowIds.length = 0;
+      sceneEvents.emit("deletion");
     },
     updateResizingBoxesToFreeRatio() {},
     updateResizingBoxesToLockedRatio() {},
@@ -959,7 +987,7 @@ const state = createState({
       data.selectedBoxIds = [];
       data.selectedArrowIds = [];
 
-      __events.emit("demo.boxCountChanged");
+      sceneEvents.emit("demo.boxCountChanged");
 
       getFromWorker("updateTree", {
         boxes: Object.values(boxes),
@@ -1003,78 +1031,6 @@ const state = createState({
       data.arrow.to = undefined;
       data.arrow.from = undefined;
     },
-    // updateSelectedArrowCache(data) {
-    //   data.selectedBoxIds.forEach((boxId) => {
-    //     steady.boxes[boxId].arrows.forEach((arrowId) => {
-    //       const arrow = steady.arrows[arrowId];
-    //       steady.arrowCache[id] = computeArrow(arrow, steady.boxes);
-    //     });
-    //   });
-    // },
-    // 	const { arrows, boxes } = steady
-    // 	updateArrows(arrows, boxes)
-    // },
-    // updateArrowsToSelected(data) {
-    // 	const { arrows, boxes, selection } = steady
-    // 	const connectedArrows = arrows.filter(
-    // 		(arrow) =>
-    // 			selection.includes(arrow.to) || selection.includes(arrow.from)
-    // 	)
-    // 	updateArrows(connectedArrows, boxes)
-    // },
-    // invertSelectedArrows(data) {
-    // 	const { boxes, arrows, selection } = steady
-    // 	const selectedArrows = arrows.filter((arrow) =>
-    // 		selection.includes(arrow.id)
-    // 	)
-
-    // 	for (let arrow of selectedArrows) {
-    // 		const t = arrow.from
-    // 		arrow.from = arrow.to
-    // 		arrow.to = t
-    // 	}
-
-    // 	updateArrows(selectedArrows, boxes)
-    // },
-    // invertSelectedBoxArrows(data) {
-    // 	const { arrows, boxes, selection } = steady
-    // 	const selectedArrows = arrows.filter(({ to, from }) =>
-    // 		[to, from].some((id) => selection.includes(id))
-    // 	)
-
-    // 	for (let arrow of selectedArrows) {
-    // 		const t = arrow.from
-    // 		arrow.from = arrow.to
-    // 		arrow.to = t
-    // 	}
-
-    // 	updateArrows(selectedArrows, boxes)
-    // },
-    // flipSelectedArrows(data) {
-    // 	const { boxes, arrows, selection } = steady
-
-    // 	for (let arrow of arrows) {
-    // 		if (selection.includes(arrow.id)) {
-    // 			arrow.flip = !arrow.flip
-    // 		}
-    // 	}
-
-    // 	updateArrows(arrows, boxes)
-    // },
-    // flipSelectedBoxArrows(data) {
-    // 	const { arrows, boxes, selection } = steady
-    // 	const connectedArrows = arrows.filter(({ to, from }) =>
-    // 		[to, from].some((id) => selection.includes(id))
-    // 	)
-    // 	for (let arrow of connectedArrows) {
-    // 		arrow.flip = !arrow.flip
-    // 	}
-
-    // 	updateArrows(connectedArrows, boxes)
-    // },
-    // clearArrowTo(data, payload = {}) {
-    // 	data.arrow.to = undefined
-    // },
   },
   asyncs: {
     async stretchSelectedBoxesX(data) {

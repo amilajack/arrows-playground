@@ -1,7 +1,7 @@
 import { Paint } from "canvaskit-wasm";
 import * as Comlink from "comlink";
 import { IBox } from "../../types";
-import state, { pointerState, steady, __events as sceneEvents } from "../state";
+import state, { pointerState, steady, sceneEvents } from "../state";
 import {
   invalidate,
   SkCanvas,
@@ -13,6 +13,7 @@ import {
   useFrame,
 } from "react-skia-fiber";
 import { useEffect, useState, useRef } from "react";
+import { CenteredRect, getCorners } from "../utils";
 
 export enum HitType {
   Canvas = "canvas",
@@ -51,7 +52,7 @@ const getCursor = (hit: Hit) => {
       return hit.corner % 2 === 0 ? "nwse-resize" : "nesw-resize";
     }
     case "bounds-edge": {
-      return hit.edge % 2 === 0 ? "ns-" : "ew-resize";
+      return hit.edge % 2 === 0 ? "ns-resize" : "ew-resize";
     }
     case "canvas": {
       return "default";
@@ -97,10 +98,13 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
         zoom: state.data.camera.zoom,
       });
     };
+    const deletion = () => {
+      setArrowCache({ ...steady.arrowCache });
+    };
     sceneEvents.on("demo.boxCountChanged", resetDemo);
+    sceneEvents.on("deletion", deletion);
 
     const unsubState = state.onUpdate(() => {
-      // console.log(state.active);
       invalidate();
     });
     const unsubPointerState = pointerState.onUpdate(() => {
@@ -111,11 +115,24 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
       unsubState();
       unsubPointerState();
       sceneEvents.off("demo.boxCountChanged", resetDemo);
+      sceneEvents.off("deletion", deletion);
     };
   }, []);
 
   useFrame(() => {
-    setHit(canvas);
+    if (state.isIn("selectingIdle")) {
+      // @TODO: Don't sort boxes on each frame
+      const zSortedBoxes = Object.values(steady.boxes).sort(
+        (a, b) => a.z - b.z
+      );
+      getFromWorker("updateHitTree", {
+        boxes: zSortedBoxes,
+        arrows: steady.arrows,
+        arrowCache: steady.arrowCache,
+        zoom: state.data.camera.zoom,
+      });
+    }
+    setHit(canvas).then(console.log);
   });
 
   // SkCanvas does not allow directly setting canvas transforms (ie. setTransform) so we need to
@@ -139,41 +156,47 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     { renderPriority: 0, sequence: "after" }
   );
 
-  const { current: boxPaint } = useRef(new ck.Paint());
-  const { current: selectedBoxPaint } = useRef(new ck.Paint());
-  const { current: boxStrokePaint } = useRef(new ck.Paint());
-  const { current: boundsPaint } = useRef(new ck.Paint());
-  const { current: brushPaint } = useRef(new ck.Paint());
+  const boxPaint = useRef<Paint>();
+  const selectedBoxPaint = useRef<Paint>();
+  const boxStrokePaint = useRef<Paint>();
+  const boundsPaint = useRef<Paint>();
+  const brushPaint = useRef<Paint>();
 
   useEffect(() => {
-    toSkPaint(ck, boxPaint, {
+    boxPaint.current = new ck.Paint();
+    selectedBoxPaint.current = new ck.Paint();
+    boxStrokePaint.current = new ck.Paint();
+    boundsPaint.current = new ck.Paint();
+    brushPaint.current = new ck.Paint();
+
+    toSkPaint(ck, boxPaint.current, {
       color: "white",
       style: "fill",
       antiAlias: true,
     });
 
-    toSkPaint(ck, selectedBoxPaint, {
+    toSkPaint(ck, selectedBoxPaint.current, {
       color: "dodger",
       style: "stroke",
       antiAlias: true,
       strokeWidth: 8,
     });
 
-    toSkPaint(ck, boxStrokePaint, {
+    toSkPaint(ck, boxStrokePaint.current, {
       color: "black",
       style: "stroke",
       antiAlias: true,
       strokeWidth: 8,
     });
 
-    toSkPaint(ck, boundsPaint, {
+    toSkPaint(ck, boundsPaint.current, {
       color: "dodgerblue",
       style: "stroke",
       antiAlias: true,
       strokeWidth: 8,
     });
 
-    toSkPaint(ck, brushPaint, {
+    toSkPaint(ck, brushPaint.current, {
       color: "dodgerblue",
       style: "stroke",
       antiAlias: true,
@@ -184,47 +207,89 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
   return (
     <skCanvas ref={skCanvasRef} clear="#efefef">
       {/* {state.isIn('creatingArrow') && <Arrow key={i} arrow={arrow} />} */}
-      <Brush paint={brushPaint} />
-      <Bounds paint={boundsPaint} />
       {Object.values(boxes).map((box) => (
         <Box
           box={box}
-          paint={boxPaint}
-          strokePaint={boxStrokePaint}
-          selectedStrokePaint={selectedBoxPaint}
+          paint={boxPaint.current}
+          strokePaint={boxStrokePaint.current}
+          selectedStrokePaint={selectedBoxPaint.current}
         />
       ))}
       {Object.entries(_arrowCache).map(([id]) => (
         <Arrow key={id} id={id} />
       ))}
+      <Brush paint={brushPaint.current} />
+      <Bounds paint={boundsPaint.current} />
     </skCanvas>
   );
 }
 
-function Bounds({ paint }: { paint: Paint }) {
-  const rBounds = useRef<SkRRect>();
+function Bounds({ paint: boundsPaint }: { paint: Paint }) {
   const ck = useCanvasKit();
+  const rBounds = useRef<SkPath>();
+  const rCorners = useRef<SkPath>();
+  const rCornersPaint = useRef<Paint>();
+
+  useEffect(() => {
+    rCornersPaint.current = new ck.Paint();
+  }, []);
 
   useFrame(() => {
     const { current: bounds } = rBounds;
-    if (!bounds || !steady.bounds) {
-      paint.setAlphaf(0);
+    if (
+      !bounds ||
+      !steady.bounds ||
+      !steady.bounds.height ||
+      !steady.bounds.width
+    ) {
+      boundsPaint.setAlphaf(0);
+      rCornersPaint.current!.setAlphaf(0);
       return;
     }
-    paint.setAlphaf(1);
-    bounds.x = steady.bounds.x;
-    bounds.y = steady.bounds.y;
-    bounds.width = steady.bounds.width;
-    bounds.height = steady.bounds.height;
-    bounds.layout();
+
+    boundsPaint.setAlphaf(1);
+    boundsPaint.setStrokeWidth(2 / state.data.camera.zoom);
+
+    // @TODO @HACK Ideally gemoetry would be removed on unmount
+    rBounds.current!.path.reset();
+    rBounds.current!.path.addRect(
+      ck.XYWHRect(
+        steady.bounds.x,
+        steady.bounds.y,
+        steady.bounds.width,
+        steady.bounds.height
+      )
+    );
+
+    rCorners.current?.path.reset();
+    toSkPaint(ck, rCornersPaint.current!, {
+      style: "fill",
+      color: ck._testing.parseColor("dodgerblue"),
+      antiAlias: true,
+    });
+    rCornersPaint.current!.setAlphaf(1);
+
+    for (let [x, y] of getCorners(
+      steady.bounds.x,
+      steady.bounds.y,
+      steady.bounds.width,
+      steady.bounds.height
+    )) {
+      const size = 7 / state.data.camera.zoom;
+      rCorners.current?.path.addRect(CenteredRect(ck, x, y, size, size));
+    }
   });
 
-  return <skRrect ref={rBounds} paint={paint} />;
+  return (
+    <>
+      <skPath ref={rBounds} paint={boundsPaint} />
+      <skPath ref={rCorners} paint={rCornersPaint.current} />
+    </>
+  );
 }
 
 function Brush({ paint }: { paint: Paint }) {
   const rBrush = useRef<SkRRect>();
-  const ck = useCanvasKit();
 
   useFrame(() => {
     const { current: brush } = rBrush;
@@ -233,6 +298,7 @@ function Brush({ paint }: { paint: Paint }) {
       return;
     }
     paint.setAlphaf(1);
+    paint.setStrokeWidth(2 / state.data.camera.zoom);
     const { x1, y1, x0, y0 } = steady.brush;
     brush.x = Math.min(x1, x0);
     brush.y = Math.min(y1, y0);
@@ -331,8 +397,13 @@ function Arrow({ id: id }: { id: string }) {
   const ck = useCanvasKit();
   const rArrowTips = useRef<SkPath>();
   const rArrow = useRef<SkPath>();
-  const { current: arrowPaint } = useRef<Paint>(new ck.Paint());
-  const { current: arrowTipsPaint } = useRef<Paint>(new ck.Paint());
+  const arrowPaint = useRef<Paint>();
+  const arrowTipsPaint = useRef<Paint>();
+
+  useEffect(() => {
+    arrowPaint.current = new ck.Paint();
+    arrowTipsPaint.current = new ck.Paint();
+  }, []);
 
   useFrame(() => {
     if (!steady.arrowCache[id]) return;
@@ -356,24 +427,30 @@ function Arrow({ id: id }: { id: string }) {
     arrow.svg = `M${sx},${sy} Q${cx},${cy} ${ex},${ey}`;
     arrow.layout();
 
-    if (isArrowFocused(id)) {
-      toSkPaint(ck, arrowPaint, {
-        style: "stroke",
-        strokeWidth: 8,
-        color: "dodgerblue",
-      });
-      toSkPaint(ck, arrowTipsPaint, {
-        color: "dodgerblue",
-      });
-    } else {
-      toSkPaint(ck, arrowPaint, {
-        style: "stroke",
-        strokeWidth: 8,
-        color: "black",
-      });
-      toSkPaint(ck, arrowTipsPaint, {
-        color: "black",
-      });
+    if (arrowPaint.current && arrowTipsPaint.current) {
+      if (isArrowFocused(id)) {
+        toSkPaint(ck, arrowPaint.current, {
+          style: "stroke",
+          strokeWidth: 8,
+          color: "dodgerblue",
+          antiAlias: true,
+        });
+        toSkPaint(ck, arrowTipsPaint.current, {
+          color: "dodgerblue",
+          antiAlias: true,
+        });
+      } else {
+        toSkPaint(ck, arrowPaint.current, {
+          style: "stroke",
+          strokeWidth: 8,
+          color: "black",
+          antiAlias: true,
+        });
+        toSkPaint(ck, arrowTipsPaint.current, {
+          color: "black",
+          antiAlias: true,
+        });
+      }
     }
   });
 
@@ -381,12 +458,12 @@ function Arrow({ id: id }: { id: string }) {
     <>
       <skPath
         ref={rArrowTips}
-        paint={arrowTipsPaint}
+        paint={arrowTipsPaint.current}
         style={{ style: "fill", antiAlias: true }}
       />
       <skPath
         ref={rArrow}
-        paint={arrowPaint}
+        paint={arrowPaint.current}
         style={{ style: "stroke", strokeWidth: 8, antiAlias: true }}
       />
     </>

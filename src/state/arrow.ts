@@ -46,7 +46,7 @@ export const computeArrow = (
               ]
           );
         }
-        [sx, sy, cx, cy, ex, ey, ea] = [from.x, from.y, 0, 0, to.x, to.y, 0]
+        [sx, sy, cx, cy, ex, ey, ea] = [from.x, from.y, to.x, to.y, to.x, to.y, 0]
       }
       break;
     }
