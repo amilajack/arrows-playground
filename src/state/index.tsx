@@ -28,7 +28,7 @@ const getFromWorker = Comlink.wrap<GetFromWorker>(new Worker("worker.js"));
 const id = uuid();
 
 function getId() {
-  return uniqueId(id);
+  return `b_${Object.keys(steady.boxes).length}`;
 }
 
 /**
@@ -443,11 +443,7 @@ const state = createState({
       return !!to && !data.selectedBoxIds.includes(to);
     },
     arrowSelected(data) {
-      return (
-        data.selectedArrowIds.findIndex(({ id }) =>
-          data.selectedArrowIds.includes(id)
-        ) > -1
-      );
+      return data.selectedArrowIds.includes(id);
     },
     arrowIsSelected(data, payload = {}) {
       const { id } = payload;
@@ -748,7 +744,7 @@ const state = createState({
 
       const bounds = getBoundingBox(selectedBoxes);
 
-      let initialBoxes = {};
+      let initialBoxes: Record<string, IBox> = {};
 
       for (let box of selectedBoxes) {
         initialBoxes[box.id] = {
@@ -763,7 +759,8 @@ const state = createState({
           nmy: (box.y + box.height - bounds.y) / bounds.height,
           nw: box.width / bounds.width,
           nh: box.height / bounds.height,
-        };
+          arrows: [],
+        } as const;
       }
 
       steady.initial.boxes = initialBoxes;
@@ -903,8 +900,10 @@ const state = createState({
           label: "",
           color: "#FFF",
           z: Object.keys(boxes).length + 1,
+          arrows: [],
         },
       };
+      sceneEvents.emit("deletion");
     },
     updateDrawingBox(data) {
       const { spawning, initial } = steady;
@@ -924,6 +923,7 @@ const state = createState({
       boxes[box.id] = box;
       spawning.boxes = {};
       data.selectedBoxIds = [box.id];
+      sceneEvents.emit("deletion");
     },
     clearDrawingBox() {},
     // Boxes
@@ -948,6 +948,7 @@ const state = createState({
         color: "#FFF",
         type: "text",
         z: Object.keys(boxes).length + 1,
+        arrows: [],
       };
       boxes[box.id] = box;
     },

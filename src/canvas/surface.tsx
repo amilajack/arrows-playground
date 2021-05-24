@@ -156,11 +156,11 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     { renderPriority: 0, sequence: "after" }
   );
 
-  const boxPaint = useRef<Paint>();
-  const selectedBoxPaint = useRef<Paint>();
-  const boxStrokePaint = useRef<Paint>();
-  const boundsPaint = useRef<Paint>();
-  const brushPaint = useRef<Paint>();
+  const boxPaint = useRef<Paint>(null);
+  const selectedBoxPaint = useRef<Paint>(null);
+  const boxStrokePaint = useRef<Paint>(null);
+  const boundsPaint = useRef<Paint>(null);
+  const brushPaint = useRef<Paint>(null);
 
   useEffect(() => {
     boxPaint.current = new ck.Paint();
@@ -176,7 +176,7 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     });
 
     toSkPaint(ck, selectedBoxPaint.current, {
-      color: "dodger",
+      color: "dodgerblue",
       style: "stroke",
       antiAlias: true,
       strokeWidth: 8,
@@ -206,7 +206,14 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
 
   return (
     <skCanvas ref={skCanvasRef} clear="#efefef">
-      {/* {state.isIn('creatingArrow') && <Arrow key={i} arrow={arrow} />} */}
+      {steady.spawning.boxes.drawingBox && (
+        <Box
+          box={steady.spawning.boxes.drawingBox}
+          paint={boxPaint.current}
+          strokePaint={boxStrokePaint.current}
+          selectedStrokePaint={selectedBoxPaint.current}
+        />
+      )}
       {Object.values(boxes).map((box) => (
         <Box
           box={box}
@@ -311,6 +318,7 @@ function Brush({ paint }: { paint: Paint }) {
 }
 
 const isBoxSelected = (box: IBox) => state.data.selectedBoxIds.includes(box.id);
+const isBoxHovered = (box: IBox) => steady.hit?.id === box.id;
 
 function Box({
   box,
@@ -335,10 +343,10 @@ function Box({
       !rStroke.current ||
       !rPos.current ||
       !rId.current ||
-      !steady.boxes[box.id]
+      !(steady.boxes[box.id] || box)
     )
       return;
-    const { x, y, width, height } = steady.boxes[box.id]!;
+    const { x, y, width, height } = steady.boxes[box.id]! || box;
 
     rFill.current.x = x;
     rFill.current.y = y;
@@ -354,16 +362,15 @@ function Box({
 
     rPos.current.x = x;
     rPos.current.y = y + height + 40;
-    rPos.current.text = `${Math.round(localBox.width)}x${Math.round(
-      localBox.height
-    )}`;
+    rPos.current.text = `${Math.round(width)}x${Math.round(height)}`;
 
     rId.current.x = x;
     rId.current.y = y - 10;
 
-    rStroke.current.paint = isBoxSelected(box)
-      ? selectedStrokePaint
-      : strokePaint;
+    rStroke.current.paint =
+      isBoxSelected(box) || isBoxHovered(box)
+        ? selectedStrokePaint
+        : strokePaint;
   });
 
   return (

@@ -37,7 +37,7 @@ export function getInitialData(): Data {
 
     const initBoxes: Record<string, IBox> = Array.from(Array(700))
       .map((_, i) => ({
-        id: String(i),
+        id: `b_${i}`,
         x: 64 + Math.random() * window.innerWidth * 10,
         y: 64 + Math.random() * window.innerHeight * 10,
         width: 132 + Math.random() * 64,
@@ -63,7 +63,7 @@ export function getInitialData(): Data {
         const shouldCreateArrow = Math.random() < ARROW_PROBABILITY;
         if (!shouldCreateArrow) continue;
 
-        let boxA = initBoxes[String(i)] as IBox;
+        let boxA = initBoxes[`b_${i}`] as IBox;
         // Create arrows between boxes that are close to each other to create a
         // realistic looking diagram
         let boxB = boxes.find(
@@ -74,19 +74,18 @@ export function getInitialData(): Data {
         );
         if (!boxA || !boxB) continue;
 
-        const id = String(i);
-
-        initArrows[id] = {
-          id: id,
+        const arrowId = `a_${i}`;
+        initArrows[arrowId] = {
+          id: arrowId,
           type: IArrowType.BoxToBox,
           from: boxA.id,
           to: boxB.id,
           flip: false,
           label: "",
         };
-        arrowCache[id] = computeArrow(initArrows[id], initBoxes);
-        boxA.arrows.push(id);
-        boxB.arrows.push(id);
+        arrowCache[arrowId] = computeArrow(initArrows[arrowId], initBoxes);
+        boxA.arrows.push(arrowId);
+        boxB.arrows.push(arrowId);
       }
     }
 
