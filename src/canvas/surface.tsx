@@ -132,7 +132,7 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
         zoom: state.data.camera.zoom,
       });
     }
-    setHit(canvas).then(console.log);
+    setHit(canvas);
   });
 
   // SkCanvas does not allow directly setting canvas transforms (ie. setTransform) so we need to
@@ -354,7 +354,9 @@ function Box({
 
     rPos.current.x = x;
     rPos.current.y = y + height + 40;
-    rPos.current.text = `${Math.round(localBox.x)}x${Math.round(localBox.y)}`;
+    rPos.current.text = `${Math.round(localBox.width)}x${Math.round(
+      localBox.height
+    )}`;
 
     rId.current.x = x;
     rId.current.y = y - 10;

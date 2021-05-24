@@ -2457,7 +2457,7 @@ __metadata:
     react: ^17.0.2
     react-dom: ^17.0.2
     react-no-ssr: ^1.1.0
-    react-skia-fiber: /Users/amila/Documents/Projects/react-skia-fiber/react-skia-fiber-v1.0.0.tgz
+    react-skia-fiber: ../react-skia-fiber/react-skia-fiber-v1.0.0.tgz
     typescript: ^4.2.4
     use-resize-observer: ^7.0.0
     uuid: ^8.3.2
@@ -8492,9 +8492,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-skia-fiber@file:/Users/amila/Documents/Projects/react-skia-fiber/react-skia-fiber-v1.0.0.tgz::locator=arrows-playground%40workspace%3A.":
+"react-skia-fiber@file:../react-skia-fiber/react-skia-fiber-v1.0.0.tgz::locator=arrows-playground%40workspace%3A.":
   version: 1.0.0
-  resolution: "react-skia-fiber@file:/Users/amila/Documents/Projects/react-skia-fiber/react-skia-fiber-v1.0.0.tgz::locator=arrows-playground%40workspace%3A."
+  resolution: "react-skia-fiber@file:../react-skia-fiber/react-skia-fiber-v1.0.0.tgz::locator=arrows-playground%40workspace%3A."
   dependencies:
     lodash: ^4.17.21
     react-reconciler: ^0.26.2
@@ -8502,7 +8502,7 @@ __metadata:
     zustand: ^3.4.2
   peerDependencies:
     react: ^17.0.2
-  checksum: c4a3b588c661c403577d5941ec93ad40af4dc10cb09bdf7d379529506eebd413c865059c87c18b7868fa3cc49d53e1b78b0c003c434789846f9bd39e5d98e748
+  checksum: 7f19f84f3b84c659590485c80d11cdd7724f8d4dad7c51456e4f159a6e61c8ec99ef5301f4447f9e0db420641215839a2e9f0511eba7592e022625b6f00ea600
   languageName: node
   linkType: hard
 
