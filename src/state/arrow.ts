@@ -2,6 +2,10 @@ import { ArrowCache, steady } from ".";
 import { IArrow, IArrowType, IBox } from "../../types";
 import { getBoxToBoxArrow, getArrow } from "perfect-arrows";
 
+const arrowOpts = {
+  padEnd: 40,
+};
+
 export const computeArrow = (
   arrow: IArrow,
   boxes: Record<string, IBox>
@@ -28,7 +32,8 @@ export const computeArrow = (
           Math.round(to.x) || 0,
           Math.round(to.y) || 0,
           Math.round(to.width) || 0,
-          Math.round(to.height) || 0
+          Math.round(to.height) || 0,
+          arrowOpts
         );
       } catch (e) {
         if (process.env.NODE_ENV !== "production") {
@@ -46,7 +51,15 @@ export const computeArrow = (
               ]
           );
         }
-        [sx, sy, cx, cy, ex, ey, ea] = [from.x, from.y, to.x, to.y, to.x, to.y, 0]
+        [sx, sy, cx, cy, ex, ey, ea] = [
+          from.x,
+          from.y,
+          to.x,
+          to.y,
+          to.x,
+          to.y,
+          0,
+        ];
       }
       break;
     }
@@ -62,7 +75,8 @@ export const computeArrow = (
         to.x,
         to.y,
         1,
-        1
+        1,
+        arrowOpts
       );
 
       break;
@@ -79,7 +93,8 @@ export const computeArrow = (
         to.x,
         to.y,
         to.width,
-        to.height
+        to.height,
+        arrowOpts
       );
 
       break;
