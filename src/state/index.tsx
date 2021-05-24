@@ -27,8 +27,12 @@ const getFromWorker = Comlink.wrap<GetFromWorker>(new Worker("worker.js"));
 
 const id = uuid();
 
-function getId() {
-  return `b_${Object.keys(steady.boxes).length}`;
+function getBoxId() {
+  return `b_${Object.keys(steady.boxes).length}_${uniqueId().slice(0, 5)}`;
+}
+
+function getArrowId() {
+  return `a_${Object.keys(steady.arrows).length}_${uniqueId().slice(0, 5)}`;
 }
 
 /**
@@ -93,10 +97,6 @@ function updateSelectedArrowCache(data: typeof state.data) {
 const state = createState({
   data: {
     text: null,
-    arrow: {
-      from: undefined as string | undefined,
-      to: undefined as string | undefined,
-    },
     selectedArrowIds: [] as string[],
     selectedBoxIds: [] as string[],
     pointer: {
@@ -373,7 +373,7 @@ const state = createState({
               {
                 do: [
                   "setArrowTo",
-                  "completeArrow",
+                  "completeDrawingArrow",
                   "updateBounds",
                   "saveUndoState",
                 ],
@@ -439,8 +439,8 @@ const state = createState({
       return data.selectedBoxIds.length > 0 || data.selectedArrowIds.length > 0;
     },
     arrowTargetIsValid(data) {
-      const { to } = data.arrow;
-      return !!to && !data.selectedBoxIds.includes(to);
+      const { to } = steady.spawning.arrows.spawningArrow;
+      return !!to && !data.selectedBoxIds.includes(to as string);
     },
     arrowSelected(data) {
       return data.selectedArrowIds.includes(id);
@@ -861,7 +861,7 @@ const state = createState({
       }
       data.selectedBoxIds.length = 0;
       data.selectedArrowIds.length = 0;
-      sceneEvents.emit("deletion");
+      sceneEvents.emit("invalidate");
     },
     updateResizingBoxesToFreeRatio() {},
     updateResizingBoxesToLockedRatio() {},
@@ -870,18 +870,37 @@ const state = createState({
     restoreInitialBoxes() {},
     completeSelectedBoxes() {},
     // Drawing Arrow
-    createDrawingArrow() {},
-    setDrawingArrowTarget() {},
-    completeDrawingArrow() {},
-    clearDrawingArrow() {},
-    // Arrows
-    updateSelectedArrows() {},
-    flipSelectedArrows() {},
-    invertSelectedArrows() {},
-    // Arrows to Boxes
-    boxes() {},
-    flipArrowsToSelectedBoxes() {},
-    invertArrowsToSelectedBoxes() {},
+    completeDrawingArrow(data) {
+      const { boxes, arrows, spawning, arrowCache } = steady;
+      const { to, from } = spawning.arrows.drawingArrow as {
+        to: string;
+        from: string;
+      };
+      if (!(to && from)) return;
+
+      const boxA = boxes[from];
+      const boxB = boxes[to];
+      if (!(boxA && boxB)) return;
+
+      const arrowId = getArrowId();
+      const arrow = {
+        id: arrowId,
+        type: IArrowType.BoxToBox,
+        from,
+        to,
+        flip: false,
+        label: "",
+      } as const;
+      arrows[arrowId] = arrow;
+      arrowCache[arrowId] = computeArrow(arrow, boxes);
+
+      boxA.arrows.push(arrowId);
+      boxB.arrows.push(arrowId);
+
+      data.selectedBoxIds = [to];
+      delete spawning.arrows.spawningArrow;
+      sceneEvents.emit("invalidate");
+    },
     // Drawing Box
     setBoxOrigin(data) {
       const { pointer, viewBox, camera } = data;
@@ -892,7 +911,7 @@ const state = createState({
       const { pointer } = data;
       spawning.boxes = {
         drawingBox: {
-          id: getId(),
+          id: getBoxId(),
           x: Math.min(pointer.x, initial.pointer.x),
           y: Math.min(pointer.y, initial.pointer.y),
           width: Math.abs(pointer.x - initial.pointer.x),
@@ -903,7 +922,7 @@ const state = createState({
           arrows: [],
         },
       };
-      sceneEvents.emit("deletion");
+      sceneEvents.emit("invalidate");
     },
     updateDrawingBox(data) {
       const { spawning, initial } = steady;
@@ -923,7 +942,7 @@ const state = createState({
       boxes[box.id] = box;
       spawning.boxes = {};
       data.selectedBoxIds = [box.id];
-      sceneEvents.emit("deletion");
+      sceneEvents.emit("invalidate");
     },
     clearDrawingBox() {},
     // Boxes
@@ -996,41 +1015,21 @@ const state = createState({
     },
 
     // Arrows
-    setArrowTo(data, payload = {}) {
-      const { id = "-1" } = payload;
-      if (id === data.arrow.from) return;
-      data.arrow.to = id;
-    },
     setArrowFrom(data) {
-      data.arrow.from = data.selectedBoxIds[0];
+      if (!steady.spawning.arrows.drawingArrow)
+        steady.spawning.arrows.drawingArrow = {};
+      steady.spawning.arrows.drawingArrow.from = data.selectedBoxIds[0];
+      sceneEvents.emit("invalidate");
     },
-
-    completeArrow(data) {
-      const { boxes, arrows } = steady;
-      const { to, from } = data.arrow;
-      if (!(to && from)) return;
-
-      const a = boxes[from];
-      const b = boxes[to];
-
-      if (!(a && b)) return;
-
-      const id = uniqueId("arrow");
-
-      const arrow = {
-        id: id,
-        type: IArrowType.BoxToBox,
-        from,
-        to,
-        flip: false,
-        label: "",
-      } as const;
-      arrows[id] = arrow;
-      steady.arrowCache[id] = computeArrow(arrow, steady.boxes);
-
-      data.selectedBoxIds = [to];
-      data.arrow.to = undefined;
-      data.arrow.from = undefined;
+    setArrowTo(_data, payload = {}) {
+      const { id = "-1" } = payload;
+      if (
+        !steady.spawning.arrows.drawingArrow ||
+        id === steady.spawning.arrows.drawingArrow?.from
+      )
+        return;
+      steady.spawning.arrows.drawingArrow.to = id;
+      sceneEvents.emit("invalidate");
     },
   },
   asyncs: {

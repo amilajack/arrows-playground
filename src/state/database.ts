@@ -74,7 +74,7 @@ export function getInitialData(): Data {
         );
         if (!boxA || !boxB) continue;
 
-        const arrowId = `a_${i}`;
+        const arrowId = `a_${Object.keys(initArrows).length}`;
         initArrows[arrowId] = {
           id: arrowId,
           type: IArrowType.BoxToBox,

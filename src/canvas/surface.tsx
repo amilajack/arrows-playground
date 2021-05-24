@@ -1,6 +1,6 @@
 import { Paint } from "canvaskit-wasm";
 import * as Comlink from "comlink";
-import { IBox } from "../../types";
+import { IArrow, IBox } from "../../types";
 import state, { pointerState, steady, sceneEvents } from "../state";
 import {
   invalidate,
@@ -14,6 +14,7 @@ import {
 } from "react-skia-fiber";
 import { useEffect, useState, useRef } from "react";
 import { CenteredRect, getCorners } from "../utils";
+import { getBoxToBoxArrow } from "perfect-arrows";
 
 export enum HitType {
   Canvas = "canvas",
@@ -102,7 +103,7 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
       setArrowCache({ ...steady.arrowCache });
     };
     sceneEvents.on("demo.boxCountChanged", resetDemo);
-    sceneEvents.on("deletion", deletion);
+    sceneEvents.on("invalidate", deletion);
 
     const unsubState = state.onUpdate(() => {
       invalidate();
@@ -115,7 +116,7 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
       unsubState();
       unsubPointerState();
       sceneEvents.off("demo.boxCountChanged", resetDemo);
-      sceneEvents.off("deletion", deletion);
+      sceneEvents.off("invalidate", deletion);
     };
   }, []);
 
@@ -135,9 +136,9 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     setHit(canvas);
   });
 
-  // SkCanvas does not allow directly setting canvas transforms (ie. setTransform) so we need to
-  // manipulate it using save() and restore()
   useFrame(() => {
+    // SkCanvas does not allow directly setting canvas transforms (ie. setTransform) so we need to
+    // manipulate it using save() and restore()
     const { camera } = state.data;
     const canvas = skCanvasRef.current?.object;
     if (!canvas) return;
@@ -156,19 +157,13 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     { renderPriority: 0, sequence: "after" }
   );
 
-  const boxPaint = useRef<Paint>(null);
-  const selectedBoxPaint = useRef<Paint>(null);
-  const boxStrokePaint = useRef<Paint>(null);
-  const boundsPaint = useRef<Paint>(null);
-  const brushPaint = useRef<Paint>(null);
+  const boxPaint = useRef<Paint>(new ck.Paint());
+  const selectedBoxPaint = useRef<Paint>(new ck.Paint());
+  const boxStrokePaint = useRef<Paint>(new ck.Paint());
+  const boundsPaint = useRef<Paint>(new ck.Paint());
+  const brushPaint = useRef<Paint>(new ck.Paint());
 
   useEffect(() => {
-    boxPaint.current = new ck.Paint();
-    selectedBoxPaint.current = new ck.Paint();
-    boxStrokePaint.current = new ck.Paint();
-    boundsPaint.current = new ck.Paint();
-    brushPaint.current = new ck.Paint();
-
     toSkPaint(ck, boxPaint.current, {
       color: "white",
       style: "fill",
@@ -206,16 +201,9 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
 
   return (
     <skCanvas ref={skCanvasRef} clear="#efefef">
-      {steady.spawning.boxes.drawingBox && (
-        <Box
-          box={steady.spawning.boxes.drawingBox}
-          paint={boxPaint.current}
-          strokePaint={boxStrokePaint.current}
-          selectedStrokePaint={selectedBoxPaint.current}
-        />
-      )}
       {Object.values(boxes).map((box) => (
         <Box
+          key={box.id}
           box={box}
           paint={boxPaint.current}
           strokePaint={boxStrokePaint.current}
@@ -225,21 +213,70 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
       {Object.entries(_arrowCache).map(([id]) => (
         <Arrow key={id} id={id} />
       ))}
+      {steady.spawning.boxes.drawingBox && (
+        <Box
+          box={steady.spawning.boxes.drawingBox}
+          paint={boxPaint.current}
+          strokePaint={boxStrokePaint.current}
+          selectedStrokePaint={selectedBoxPaint.current}
+        />
+      )}
+      {steady.spawning.arrows.drawingArrow && <DrawingArrow />}
       <Brush paint={brushPaint.current} />
       <Bounds paint={boundsPaint.current} />
     </skCanvas>
   );
 }
 
+function DrawingArrow() {
+  const [arrow, setArrow] = useState<number[]>();
+
+  useFrame(() => {
+    if (!state.isIn("creatingArrow")) {
+      setArrow(undefined);
+      return;
+    }
+    const { hit } = steady;
+    const { selectedBoxIds } = state.data;
+    if (selectedBoxIds.length > 0) {
+      const [boxId] = selectedBoxIds;
+      let to;
+      if (hit.type === "box") {
+        const { id } = hit;
+        to = steady.boxes[id];
+      } else {
+        to = {
+          ...pointerState.data.document,
+          width: 10,
+          height: 10,
+        };
+      }
+      const from = steady.boxes[boxId];
+      setArrow(
+        getBoxToBoxArrow(
+          from.x,
+          from.y,
+          from.width,
+          from.height,
+          to.x,
+          to.y,
+          to.width,
+          to.height
+        )
+      );
+    }
+  });
+
+  if (!arrow) return null;
+
+  return <Arrow arrow={arrow} />;
+}
+
 function Bounds({ paint: boundsPaint }: { paint: Paint }) {
   const ck = useCanvasKit();
   const rBounds = useRef<SkPath>();
   const rCorners = useRef<SkPath>();
-  const rCornersPaint = useRef<Paint>();
-
-  useEffect(() => {
-    rCornersPaint.current = new ck.Paint();
-  }, []);
+  const rCornersPaint = useRef<Paint>(new ck.Paint());
 
   useFrame(() => {
     const { current: bounds } = rBounds;
@@ -402,21 +439,16 @@ const transformArrowhead = (
 const isArrowFocused = (id: string) =>
   steady.hit?.id === id || state.data.selectedArrowIds.includes(id);
 
-function Arrow({ id: id }: { id: string }) {
+function Arrow({ id, arrow: _arrow }: { id?: string; arrow?: IArrow }) {
   const ck = useCanvasKit();
   const rArrowTips = useRef<SkPath>();
   const rArrow = useRef<SkPath>();
-  const arrowPaint = useRef<Paint>();
-  const arrowTipsPaint = useRef<Paint>();
-
-  useEffect(() => {
-    arrowPaint.current = new ck.Paint();
-    arrowTipsPaint.current = new ck.Paint();
-  }, []);
+  const arrowPaint = useRef<Paint>(new ck.Paint());
+  const arrowTipsPaint = useRef<Paint>(new ck.Paint());
 
   useFrame(() => {
-    if (!steady.arrowCache[id]) return;
-    const [sx, sy, cx, cy, ex, ey, ea] = steady.arrowCache[id];
+    if ((!steady.arrowCache[id] && !_arrow) || !rArrowTips.current) return;
+    const [sx, sy, cx, cy, ex, ey, ea] = steady.arrowCache[id] || _arrow;
     const { path: arrowTipPath } = rArrowTips.current!;
     const arrow = rArrow.current!;
 
