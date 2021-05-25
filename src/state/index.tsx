@@ -10,7 +10,7 @@ import {
   IBoxSnapshot,
 } from "../../types";
 import { pressedKeys, viewBoxToCamera, getBoundingBox } from "../utils";
-import { getInitialData, saveToDatabase } from "./database";
+import { seedInitialData, saveToDatabase } from "./database";
 import { BoxSelecter, getBoxSelecter } from "./box-selecter";
 import * as BoxTransforms from "./box-transforms";
 import uniqueId from "lodash/uniqueId";
@@ -56,7 +56,7 @@ export const pointerState = createState({
 });
 
 export const steady = {
-  ...getInitialData(),
+  ...seedInitialData(),
   hit: { type: "canvas" } as Hit,
   spawning: {
     boxes: {} as Record<string, IBox>,
@@ -974,35 +974,11 @@ const state = createState({
 
     // Debugging
     resetBoxes(data, count) {
-      const boxes = Array.from(Array(parseInt(count))).map((_, i) => ({
-        id: String(i),
-        x: -1500 + Math.random() * 3000,
-        y: -1500 + Math.random() * 3000,
-        width: 32 + Math.random() * 64,
-        height: 32 + Math.random() * 64,
-        label: "",
-        color: "#FFF",
-        z: i,
-      }));
+      const { boxes, arrows, arrowCache } = seedInitialData(parseInt(count));
 
-      const arrows = boxes.map((boxA, i) => {
-        let boxB = boxes[i === boxes.length - 1 ? 0 : i + 1];
-
-        return {
-          id: String(i),
-          type: IArrowType.BoxToBox,
-          from: boxA.id,
-          to: boxB.id,
-          flip: false,
-          label: "",
-        };
-      });
-
-      steady.boxes = Object.fromEntries(boxes.map((box) => [box.id, box]));
-
-      steady.arrows = Object.fromEntries(
-        arrows.map((arrow) => [arrow.id, arrow])
-      );
+      steady.boxes = boxes;
+      steady.arrows = arrows;
+      steady.arrowCache = arrowCache;
 
       data.selectedBoxIds = [];
       data.selectedArrowIds = [];
@@ -1010,7 +986,7 @@ const state = createState({
       sceneEvents.emit("demo.boxCountChanged");
 
       getFromWorker("updateTree", {
-        boxes: Object.values(boxes),
+        boxes: Object.values(steady.boxes),
       });
     },
 

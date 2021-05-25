@@ -1,10 +1,12 @@
 import { memo, useState } from "react";
 import Positions from "./positions";
-import state from "../state";
+import state, { steady } from "../state";
 
 function Overlays() {
   const [showPositions, setShowPositions] = useState(false);
-  const [boxCount, setBoxCount] = useState(0);
+  const [boxCount, setBoxCount] = useState(
+    Object.keys(steady.boxes).length || 0
+  );
 
   return (
     <div
@@ -29,7 +31,7 @@ function Overlays() {
           step={100}
           onChange={(e) => {
             state.send("RESET_BOXES", e.currentTarget.value);
-            setBoxCount(parseInt(e.currentTarget!.value, 10))
+            setBoxCount(parseInt(e.currentTarget!.value, 10));
           }}
         />
       )}

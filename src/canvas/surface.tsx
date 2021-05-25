@@ -90,8 +90,8 @@ export function Surface({ canvas }: { canvas: HTMLCanvasElement }) {
     });
 
     const resetDemo = () => {
-      setBoxes(steady.boxes);
-      setArrowCache(steady.arrowCache);
+      setBoxes({ ...steady.boxes });
+      setArrowCache({ ...steady.arrowCache });
       getFromWorker("updateHitTree", {
         boxes: steady.boxes,
         arrows: steady.arrows,
