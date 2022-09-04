@@ -49,5 +49,6 @@
   "lint-staged": {
     "*.ts": "prettier --write"
   },
-  "prettier": {}
+  "prettier": {},
+  "packageManager": "yarn@3.2.3"
 }

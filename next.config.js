@@ -32,6 +32,19 @@ module.exports = {
 
     return config;
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Document-Policy",
+            value: "js-profiling",
+          },
+        ],
+      },
+    ];
+  },
   devIndicators: {
     autoPrerender: false,
   },
