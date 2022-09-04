@@ -1,10 +1,11 @@
-import { memo, useRef, useEffect, HTMLProps } from "react";
+import { profiler, label } from "@palette.dev/browser";
+import { CanvasKit } from "canvaskit-wasm";
+import { HTMLProps, memo, useEffect, useRef } from "react";
 import { init, render } from "react-skia-fiber";
-import { Surface } from "./surface";
+import { RenderModes } from "react-skia-fiber/dist/commonjs/src/renderer";
 import state, { steady } from "../state";
 import { styled } from "../theme";
-import { RenderModes } from "react-skia-fiber/dist/commonjs/src/renderer";
-import { CanvasKit } from "canvaskit-wasm";
+import { Surface } from "./surface";
 
 const CanvasBackground = styled.div({
   width: "100vw",
@@ -18,6 +19,36 @@ type Props = HTMLProps<HTMLCanvasElement> & {
   height: number;
 };
 
+/**
+ * A utility for profiling and label frequent events
+ */
+export const debounce = (
+  start: () => void,
+  stop: () => void,
+  _opts?: { timeout?: number }
+) => {
+  const { timeout } = {
+    timeout: 1_000,
+    ..._opts,
+  };
+
+  let timeoutId: ReturnType<typeof global.setTimeout> | undefined;
+
+  return async () => {
+    if (timeoutId === undefined || timeoutId === null) {
+      start();
+    } else {
+      clearTimeout(timeoutId);
+    }
+
+    // Debounce marking the end of the label
+    timeoutId = window.setTimeout(() => {
+      stop();
+      timeoutId = undefined;
+    }, timeout);
+  };
+};
+
 function Canvas({ width, height }: Props) {
   const rSurface = useRef<typeof Surface>();
   const rBackground = useRef<HTMLDivElement>(null);
@@ -25,9 +56,26 @@ function Canvas({ width, height }: Props) {
   let rStore = useRef<ReturnType<typeof render>>();
   let rCanvasKit = useRef<CanvasKit>();
 
+  const debounceProfiler = debounce(
+    () => {
+      label.start("ui.wheel");
+      profiler.start({
+        sampleInterval: 10,
+        maxBufferSize: 10_000,
+      });
+    },
+    () => {
+      label.start("ui.wheel");
+      profiler.stop();
+    }
+  );
+
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
     const { pageX, pageY, deltaX, deltaY } = e;
+
+    // Debounce the profiler on wheel scroll
+    debounceProfiler();
 
     if (e.ctrlKey || e.metaKey) {
       // Zooming

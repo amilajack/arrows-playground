@@ -9,6 +9,8 @@
     "test": "exit 0"
   },
   "dependencies": {
+    "@palette.dev/browser": "^1.5.9",
+    "@palette.dev/webpack-plugin": "^1.1.6",
     "@state-designer/react": "^1.7.1",
     "@stitches/react": "^0.0.2",
     "@types/rbush": "^3.0.0",

@@ -1,3 +1,5 @@
+const PaletteWebpackPlugin = require("@palette.dev/webpack-plugin");
+
 module.exports = {
   reactStrictMode: true,
   productionBrowserSourceMaps: true,
@@ -16,6 +18,18 @@ module.exports = {
         publicPath: "/_next/",
       },
     });
+
+    if (config.mode === "production") {
+      config.plugins.push(
+        new PaletteWebpackPlugin({
+          key: "cl7nwhwbv004509jt6tv53z3s",
+          include: {
+            ext: "js",
+          },
+        })
+      );
+    }
+
     return config;
   },
   devIndicators: {
