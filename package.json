@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@palette.dev/browser": "^1.5.9",
-    "@palette.dev/webpack-plugin": "^1.1.6",
+    "@palette.dev/webpack-plugin": "latest",
     "@state-designer/react": "^1.7.1",
     "@stitches/react": "^0.0.2",
     "@types/rbush": "^3.0.0",
@@ -20,7 +20,7 @@
     "comlink": "^4.3.0",
     "lodash": "^4.17.21",
     "mitt": "^2.1.0",
-    "next": "10.2.0",
+    "next": "latest",
     "perfect-arrows": "^0.3.3",
     "rbush": "^3.0.1",
     "react": "^17.0.2",
