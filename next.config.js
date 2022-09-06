@@ -23,7 +23,7 @@ module.exports = {
       config.plugins.push(
         new PaletteWebpackPlugin({
           key: "cl7nwhwbv004509jt6tv53z3s",
-          include: ["./.next/static/chunks"],
+          include: ["./.next/static"],
           dryRun: false,
         })
       );
