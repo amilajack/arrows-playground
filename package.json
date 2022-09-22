@@ -9,7 +9,7 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@palette.dev/browser": "^1.5.9",
+    "@palette.dev/browser": "latest",
     "@palette.dev/webpack-plugin": "latest",
     "@state-designer/react": "^1.7.1",
     "@stitches/react": "^0.0.2",

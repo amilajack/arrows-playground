@@ -1629,10 +1629,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@palette.dev/browser@npm:^1.5.9":
-  version: 1.5.9
-  resolution: "@palette.dev/browser@npm:1.5.9"
-  checksum: 854c6ea31a26790e28c6fd0071027be105018e933fed662571619d8c567166630c6ef337ebaf59c21f55f443dd68f048a2e24fb58849a40df27037707c75c5ca
+"@palette.dev/browser@npm:latest":
+  version: 1.5.12
+  resolution: "@palette.dev/browser@npm:1.5.12"
+  checksum: 8bfc1063b5af0e529c3dc2da8467700169ad9e59e015c623427d8333e9a316a8e7025a17ed8bb4f11485304a2b498fbe052d2f734cdd5df3bf1d68a0f2e7c7cb
   languageName: node
   linkType: hard
 
@@ -2822,7 +2822,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "arrows-playground@workspace:."
   dependencies:
-    "@palette.dev/browser": ^1.5.9
+    "@palette.dev/browser": latest
     "@palette.dev/webpack-plugin": latest
     "@state-designer/react": ^1.7.1
     "@stitches/react": ^0.0.2
