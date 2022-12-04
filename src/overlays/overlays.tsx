@@ -20,7 +20,7 @@ function Overlays() {
         left: 0,
       }}
     >
-      {showPositions && <Positions />}
+      {/* {showPositions && <Positions />} */}
       {showPositions && <span>{boxCount} Boxes</span>}
       {showPositions && (
         <input

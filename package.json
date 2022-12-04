@@ -9,8 +9,8 @@
     "test": "exit 0"
   },
   "dependencies": {
-    "@palette.dev/browser": "latest",
-    "@palette.dev/webpack-plugin": "latest",
+    "@palette.dev/browser": "^1.13.3",
+    "@palette.dev/webpack-plugin": "^1.2.2",
     "@state-designer/react": "^1.7.1",
     "@stitches/react": "^0.0.2",
     "@types/rbush": "^3.0.0",
@@ -27,6 +27,7 @@
     "react-dom": "^17.0.2",
     "react-no-ssr": "^1.1.0",
     "react-skia-fiber": "^1.0.0",
+    "stats.js": "^0.17.0",
     "use-resize-observer": "^7.0.0",
     "uuid": "^8.3.2",
     "worker-loader": "^3.0.8"
@@ -36,6 +37,7 @@
     "@types/node": "^15.3.0",
     "@types/react": "^17.0.5",
     "@types/react-dom": "^17.0.5",
+    "@types/stats.js": "^0.17.0",
     "husky": "^5.2.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.3.0",

@@ -25,7 +25,8 @@ export default function App() {
   return (
     <Container ref={ref}>
       <Canvas width={width} height={height} style={{ userSelect: "none" }} />
-      {process.env.NODE_ENV !== "production" && <Overlays />}
+      <Overlays />
+      {/* {process.env.NODE_ENV !== "production" && <Overlays />} */}
       {process.env.NODE_ENV !== "production" && <ZoomIndicator />}
       <Toolbar />
     </Container>

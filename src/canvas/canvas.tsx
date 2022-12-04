@@ -6,6 +6,13 @@ import { RenderModes } from "react-skia-fiber/dist/commonjs/src/renderer";
 import state, { steady } from "../state";
 import { styled } from "../theme";
 import { Surface } from "./surface";
+import Stats from "stats.js";
+
+const stats = new Stats();
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.dom.style.position = "absolute";
+stats.dom.style.float = "right";
+document.body.appendChild(stats.dom);
 
 const CanvasBackground = styled.div({
   width: "100vw",
@@ -48,6 +55,14 @@ export const debounce = (
     }, timeout);
   };
 };
+
+function animate() {
+  stats.begin();
+  stats.end();
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
 
 function Canvas({ width, height }: Props) {
   const rSurface = useRef<typeof Surface>();

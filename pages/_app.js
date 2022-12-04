@@ -6,12 +6,13 @@ import {
   measure,
   network,
   profiler,
+  frames,
 } from "@palette.dev/browser";
 import "../styles/globals.css";
 
 init({
   key: "cl7nwhwbv004609jt5e7ybyk3",
-  plugins: [events(), vitals(), network(), measure(), profiler()],
+  plugins: [events(), vitals(), network(), measure(), profiler(), frames()],
 });
 
 function MyApp({ Component, pageProps }) {
