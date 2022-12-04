@@ -1,4 +1,4 @@
-const PaletteWebpackPlugin = require("@palette.dev/webpack-plugin");
+const PalettePlugin = require("@palette.dev/webpack-plugin");
 
 module.exports = {
   reactStrictMode: true,
@@ -19,15 +19,13 @@ module.exports = {
       },
     });
 
-    if (config.mode === "production") {
-      config.plugins.push(
-        new PaletteWebpackPlugin({
-          key: "cl7nwhwbv004509jt6tv53z3s",
-          include: ["./.next/static"],
-          dryRun: false,
-        })
-      );
-    }
+    config.plugins.push(
+      new PalettePlugin({
+        key: process.env.PALETTE_ASSET_KEY,
+        include: [".next/static"],
+        version: process.env.VERCEL_GIT_COMMIT_SHA,
+      })
+    );
 
     return config;
   },

@@ -13,6 +13,7 @@ import "../styles/globals.css";
 init({
   key: "cl7nwhwbv004609jt5e7ybyk3",
   plugins: [events(), vitals(), network(), measure(), profiler(), frames()],
+  version: process.env.NEXT_PUBLIC_COMMIT_SHA,
 });
 
 function MyApp({ Component, pageProps }) {
