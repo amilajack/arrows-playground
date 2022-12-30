@@ -33,7 +33,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
-            ["@palette.dev/browser", "npm:1.13.4"],\
+            ["@palette.dev/browser", "npm:1.14.1"],\
             ["@palette.dev/webpack-plugin", "npm:1.2.2"],\
             ["@state-designer/react", "virtual:c7970a0ca726a1b9e2a1280a1c3d22fddfb6e2f26436ea496286837e6b5db59cb7c8d52dd2a062238cbb1e82e0bd2654d33201e18aef7278ae04b64514857eef#npm:1.7.1"],\
             ["@stitches/react", "virtual:c7970a0ca726a1b9e2a1280a1c3d22fddfb6e2f26436ea496286837e6b5db59cb7c8d52dd2a062238cbb1e82e0bd2654d33201e18aef7278ae04b64514857eef#npm:0.0.2"],\
@@ -2748,10 +2748,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["@palette.dev/browser", [\
-        ["npm:1.13.4", {\
-          "packageLocation": "./.yarn/cache/@palette.dev-browser-npm-1.13.4-2d8f2dae7f-edc93272c7.zip/node_modules/@palette.dev/browser/",\
+        ["npm:1.14.1", {\
+          "packageLocation": "./.yarn/cache/@palette.dev-browser-npm-1.14.1-f5f0104a74-6ff8aae1f9.zip/node_modules/@palette.dev/browser/",\
           "packageDependencies": [\
-            ["@palette.dev/browser", "npm:1.13.4"]\
+            ["@palette.dev/browser", "npm:1.14.1"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -4535,7 +4535,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["arrows-playground", "workspace:."],\
-            ["@palette.dev/browser", "npm:1.13.4"],\
+            ["@palette.dev/browser", "npm:1.14.1"],\
             ["@palette.dev/webpack-plugin", "npm:1.2.2"],\
             ["@state-designer/react", "virtual:c7970a0ca726a1b9e2a1280a1c3d22fddfb6e2f26436ea496286837e6b5db59cb7c8d52dd2a062238cbb1e82e0bd2654d33201e18aef7278ae04b64514857eef#npm:1.7.1"],\
             ["@stitches/react", "virtual:c7970a0ca726a1b9e2a1280a1c3d22fddfb6e2f26436ea496286837e6b5db59cb7c8d52dd2a062238cbb1e82e0bd2654d33201e18aef7278ae04b64514857eef#npm:0.0.2"],\
